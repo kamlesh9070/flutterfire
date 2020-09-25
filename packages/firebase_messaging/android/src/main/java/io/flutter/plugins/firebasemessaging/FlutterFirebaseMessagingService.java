@@ -85,7 +85,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    */
   @Override
   public void onMessageReceived(final RemoteMessage remoteMessage) {
-    Log.i(TAG, "##################   From Github", ex);
+    Log.i(TAG, "##################   From Github");
     // If application is running in the foreground use local broadcast to handle message.
     // Otherwise use the background isolate to handle message.
     if (isApplicationForeground(this)) {
