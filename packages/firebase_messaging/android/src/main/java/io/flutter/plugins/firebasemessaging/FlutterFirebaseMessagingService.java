@@ -59,7 +59,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
 
   private static PluginRegistry.PluginRegistrantCallback pluginRegistrantCallback;
 
-  private static final String TAG = "FlutterFcmService";
+  private static final String TAG = "GitFlutterFcmService";
 
   private static Context backgroundContext;
 
@@ -85,6 +85,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    */
   @Override
   public void onMessageReceived(final RemoteMessage remoteMessage) {
+    Log.i(TAG, "##################   From Github", ex);
     // If application is running in the foreground use local broadcast to handle message.
     // Otherwise use the background isolate to handle message.
     if (isApplicationForeground(this)) {
