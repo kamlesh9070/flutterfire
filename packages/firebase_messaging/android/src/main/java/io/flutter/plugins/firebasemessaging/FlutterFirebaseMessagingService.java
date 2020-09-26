@@ -15,6 +15,11 @@ import android.util.Log;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import org.dadabhagwan.AKonnect.AKonnectNotificationManager;
+import org.dadabhagwan.AKonnect.MyTestClass;
+import org.dadabhagwan.AKonnect.dto.NotificationDTO;
+
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.view.FlutterCallbackInformation;
@@ -85,7 +90,9 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    */
   @Override
   public void onMessageReceived(final RemoteMessage remoteMessage) {
-    Log.i(TAG, "##################   From Github");
+    Log.i(TAG, "################## Changed kk From Github");
+    MyTestClass.testMsg();
+    sendAkonnectNotification(remoteMessage);
     // If application is running in the foreground use local broadcast to handle message.
     // Otherwise use the background isolate to handle message.
     if (isApplicationForeground(this)) {
@@ -117,6 +124,70 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     }
   }
 
+  void sendAkonnectNotification(final RemoteMessage remoteMessage) {
+    Log.v(TAG, "==> MyFirebaseMessagingService onMessageReceived remoteMessage ::  " + remoteMessage.toString());
+
+    if (remoteMessage.getNotification() != null) {
+      Log.v(TAG, "\tNotification Title: " + remoteMessage.getNotification().getTitle());
+      Log.v(TAG, "\tNotification Message: " + remoteMessage.getNotification().getBody());
+    }
+
+    Map<String, Object> data = new HashMap<String, Object>();
+    data.put("wasTapped", false);
+    for (String key : remoteMessage.getData().keySet()) {
+      Object value = remoteMessage.getData().get(key);
+      //Log.v(TAG, "\tKey: " + key + " Value: " + value);
+      data.put(key, value);
+    }
+
+    Log.v(TAG, "\tNotification Data: " + data.toString());
+    Log.v(TAG, "\tNotification Data: " + data.get("isFCMNotification") + " Condition with equals--> " + (data.get("isFCMNotification").equals("true"))
+      +  " Condition with String Contains--> " + (data.toString().contains("isFCMNotification=true")));
+
+    if(data.get("isFCMNotification").equals("true")){
+      sendNotification(data);
+    }
+  }
+
+  /**
+   * Create and show a simple notification containing the received FCM message.
+   *
+   * @param data FCM message body received.
+   */
+  //private void sendNotification(String title, String messageBody, Map<String, String> data) {
+  private void sendNotification(Map<String, Object> data) {
+
+    int notId = 0;
+
+    try {
+      try {
+        notId = Integer.parseInt(data.get("notId").toString());
+      } catch (NumberFormatException e) {
+        Log.e(TAG, "Number format exception - Error parsing Notification ID: " + e.getMessage());
+      } catch (Exception e) {
+        Log.e(TAG, "Number format exception - Error parsing Notification ID" + e.getMessage());
+      }
+      String notificationTitle = data.get("title").toString();
+      String notificationText = data.get("message").toString();
+      String senderAliasId = data.get("senderAliasId").toString();
+
+
+      NotificationDTO notificationDTO = new NotificationDTO();
+      notificationDTO.setNotId(notId);
+      notificationDTO.setNotificationTitle(notificationTitle);
+      notificationDTO.setNotificationText(notificationText);
+      if (senderAliasId == null)
+        senderAliasId = notificationTitle;
+      notificationDTO.setSenderAliasId(senderAliasId);
+      Log.v(TAG, "FCM Notification Context ------> " + this.toString());
+      Log.v(TAG, "FCM AKonnectNotificationManager.sendStackNotification " + notificationDTO.toString());
+      new AKonnectNotificationManager(this, notificationDTO).sendStackNotification("2");
+    } catch (Exception e) {
+      Log.e(TAG, "Exception in Firebase AKonnectNotificationManager.sendStackNotification " + e.getStackTrace().toString());
+    }
+
+
+  }
   /**
    * Called when a new token for the default Firebase project is generated.
    *
