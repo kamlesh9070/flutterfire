@@ -95,7 +95,7 @@ public class ApplicationUtility {
         }
       }
     } catch (Exception e) {
-      Log.e(TAG, "Error while getting sender Image, e:" e.getMessage(), e);
+      Log.e(TAG, "Error while getting sender Image, e:" + e.getMessage(), e);
     }
     if (channelImg == null)
       channelImg = getDefaultChannelImg(context);
