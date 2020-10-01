@@ -9,6 +9,8 @@ public class SharedPrefConstants {
 
     public static final String FILE_NAME_NOTIFICATION_LOG_PREF = "NotificationLog";
     public static final String LATEST_MESSAGES_BY_MSGID_APIURL = "LatestMessagesByMsgIdApiUrl";
+  public static final String FILE_NAME_SENDER_ALIAS_MASTER_PREF = "SenderAliasMaster";
+  public static final String FILE_NAME_APP_MAIN_PREF = "FlutterSharedPreferences";
     public static final String API_URL = "ApiUrl";
     public static final String API_KEY = "ApiKey";
     public static final String ACTIVATION_SRNO = "ActivationSrNo";
@@ -25,6 +27,9 @@ public class SharedPrefConstants {
     public static final String ALARM_OFFSET_WINDOW_IN_SECONDS = "AlarmOffsetWindowInMinutes";
     public static final String ALARM_ACTIVE_FLAG = "AlarmActiveFlag";
     public static final String NEXT_ALARM_SCHEDULED_TIME = "NextAlarmScheduledTime";
-    public static final String FILE_NAME_SENDER_ALIAS_MASTER_PREF = "SenderAliasMaster";
+
+
+  public static final String FLUTTER_CHANNELDETAILS = "flutter.ChannelDetails";
+  public static final String FLUTTER_USERPROFILE = "flutter.UserProfile";
 
 }

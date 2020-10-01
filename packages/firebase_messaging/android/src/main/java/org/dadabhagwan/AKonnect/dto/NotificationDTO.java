@@ -2,51 +2,51 @@ package org.dadabhagwan.AKonnect.dto;
 
 public class NotificationDTO {
 
-    private int notId;
-    private String senderAliasId;
-    private String notificationTitle;
-    private String notificationText;
+  private int messageId;
+  private String channelId;
+  private String channelName;
+  private String notificationTitle;
 
 
-    public int getNotId() {
-        return notId;
-    }
+  public int getMessageId() {
+    return messageId;
+  }
 
-    public void setNotId(int notId) {
-        this.notId = notId;
-    }
+  public void setMessageId(int messageId) {
+    this.messageId = messageId;
+  }
 
-    public String getNotificationTitle() {
-        return notificationTitle;
-    }
+  public String getChannelName() {
+    return channelName;
+  }
 
-    public void setNotificationTitle(String notificationTitle) {
-        this.notificationTitle = notificationTitle;
-    }
+  public void setChannelName(String channelName) {
+    this.channelName = channelName;
+  }
 
-    public String getNotificationText() {
-        return notificationText;
-    }
+  public String getNotificationTitle() {
+    return notificationTitle;
+  }
 
-    public void setNotificationText(String notificationText) {
-        this.notificationText = notificationText;
-    }
+  public void setNotificationTitle(String notificationTitle) {
+    this.notificationTitle = notificationTitle;
+  }
 
-    public String getSenderAliasId() {
-        return senderAliasId;
-    }
+  public String getChannelId() {
+    return channelId;
+  }
 
-    public void setSenderAliasId(String senderAliasId) {
-        this.senderAliasId = senderAliasId;
-    }
+  public void setChannelId(String channelId) {
+    this.channelId = channelId;
+  }
 
-    @Override
-    public String toString() {
-        return "NotificationDTO{" +
-                "notId=" + notId +
-                ", senderAliasId=" + senderAliasId +
-                ", notificationTitle='" + notificationTitle + '\'' +
-                ", notificationText='" + notificationText + '\'' +
-                '}';
-    }
+  @Override
+  public String toString() {
+    return "NotificationDTO{" +
+      "notId=" + messageId +
+      ", senderAliasId=" + channelId +
+      ", notificationTitle='" + channelName + '\'' +
+      ", notificationText='" + notificationTitle + '\'' +
+      '}';
+  }
 }

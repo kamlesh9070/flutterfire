@@ -19,16 +19,12 @@ import android.view.ViewGroup;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
-import org.dadabhagwan.AKonnect.dbo.DBHelper;
-import org.dadabhagwan.AKonnect.HttpPostAsyncTask;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -206,10 +202,10 @@ public class ApplicationUtility {
                 JSONObject jsonObject=resultArray.getJSONObject(i);
 
                 NotificationDTO notificationDTO = new NotificationDTO();
-                notificationDTO.setNotId(jsonObject.getInt("MsgId"));
-                notificationDTO.setNotificationTitle(jsonObject.getString("Title"));
-                notificationDTO.setNotificationText(jsonObject.getString("MsgText"));
-                notificationDTO.setSenderAliasId(jsonObject.getString("SenderAliasId") == null ? jsonObject.getString("Title") : jsonObject.getString("SenderAliasId"));
+                notificationDTO.setMessageId(jsonObject.getInt("MsgId"));
+                notificationDTO.setChannelName(jsonObject.getString("Title"));
+                notificationDTO.setNotificationTitle(jsonObject.getString("MsgText"));
+                notificationDTO.setChannelId(jsonObject.getString("SenderAliasId") == null ? jsonObject.getString("Title") : jsonObject.getString("SenderAliasId"));
                 Log.d(TAG, " generateNotificationsForFetchMessages  notificationDTO" + notificationDTO.toString());
                 new AKonnectNotificationManager(context, notificationDTO).sendStackNotification("3"); // 3 - Notifications fetched from server
             }
@@ -313,4 +309,8 @@ public class ApplicationUtility {
 
             }
         }*/
+
+        public static boolean isStringNullOrEmpty(String str) {
+          return str == null || str.isEmpty();
+        }
 }

@@ -15,10 +15,16 @@ import android.util.Log;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-
+import com.google.gson.Gson;
 import org.dadabhagwan.AKonnect.AKonnectNotificationManager;
+import org.dadabhagwan.AKonnect.ApplicationUtility;
 import org.dadabhagwan.AKonnect.MyTestClass;
+import org.dadabhagwan.AKonnect.SharedPreferencesTask;
+import org.dadabhagwan.AKonnect.constants.MessageLanguage;
+import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
+import org.dadabhagwan.AKonnect.dto.NotificationData;
+import org.dadabhagwan.AKonnect.dto.UserProfile;
 
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.PluginRegistry;
@@ -26,6 +32,10 @@ import io.flutter.view.FlutterCallbackInformation;
 import io.flutter.view.FlutterMain;
 import io.flutter.view.FlutterNativeView;
 import io.flutter.view.FlutterRunArguments;
+
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonElement;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -90,7 +100,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    */
   @Override
   public void onMessageReceived(final RemoteMessage remoteMessage) {
-    Log.i(TAG, "################## Changed kk From Github");
+    Log.i(TAG, "$$$$$$$$$$$$$ Changed KK New From Github");
     MyTestClass.testMsg();
     sendAkonnectNotification(remoteMessage);
     // If application is running in the foreground use local broadcast to handle message.
@@ -139,14 +149,8 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
       //Log.v(TAG, "\tKey: " + key + " Value: " + value);
       data.put(key, value);
     }
-
     Log.v(TAG, "\tNotification Data: " + data.toString());
-    Log.v(TAG, "\tNotification Data: " + data.get("isFCMNotification") + " Condition with equals--> " + (data.get("isFCMNotification").equals("true"))
-      +  " Condition with String Contains--> " + (data.toString().contains("isFCMNotification=true")));
-
-    if(data.get("isFCMNotification").equals("true")){
-      sendNotification(data);
-    }
+    sendNotification(data);
   }
 
   /**
@@ -156,32 +160,36 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    */
   //private void sendNotification(String title, String messageBody, Map<String, String> data) {
   private void sendNotification(Map<String, Object> data) {
-
-    int notId = 0;
-
     try {
-      try {
-        notId = Integer.parseInt(data.get("notId").toString());
-      } catch (NumberFormatException e) {
-        Log.e(TAG, "Number format exception - Error parsing Notification ID: " + e.getMessage());
-      } catch (Exception e) {
-        Log.e(TAG, "Number format exception - Error parsing Notification ID" + e.getMessage());
+      Log.d(TAG, "$$$$$$$$$$$$$$$$ data:" + data);
+      Gson gson = new Gson();
+      JsonElement jsonElement = gson.toJsonTree(data);
+      NotificationData notificationData = gson.fromJson(jsonElement, NotificationData.class);
+      Log.d(TAG, "$$$$$$$$$$$$$$$$ notificationData:" + notificationData);
+      int notId = 0;
+      String notificationText = getTitle(notificationData);
+      if(!ApplicationUtility.isStringNullOrEmpty(notificationText)) {
+        try {
+          notId = Integer.parseInt(notificationData.getMessageId());
+        } catch (NumberFormatException e) {
+          Log.e(TAG, "Number format exception - Error parsing Notification ID: " + e.getMessage());
+        } catch (Exception e) {
+          Log.e(TAG, "Number format exception - Error parsing Notification ID" + e.getMessage());
+        }
+
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setMessageId(notId);
+        notificationDTO.setChannelName(notificationData.getChannelName());
+        notificationDTO.setNotificationTitle(notificationText);
+        String channelId = notificationData.getChannelId();
+        if (channelId == null)
+          channelId = notificationData.getChannelName();
+        notificationDTO.setChannelId(channelId);
+        Log.v(TAG, "FCM Notification Context ------> " + this.toString());
+        Log.v(TAG, "FCM AKonnectNotificationManager.sendStackNotification " + notificationDTO.toString());
+        new AKonnectNotificationManager(this, notificationDTO).sendStackNotification("2");
       }
-      String notificationTitle = data.get("title").toString();
-      String notificationText = data.get("message").toString();
-      String senderAliasId = data.get("senderAliasId").toString();
 
-
-      NotificationDTO notificationDTO = new NotificationDTO();
-      notificationDTO.setNotId(notId);
-      notificationDTO.setNotificationTitle(notificationTitle);
-      notificationDTO.setNotificationText(notificationText);
-      if (senderAliasId == null)
-        senderAliasId = notificationTitle;
-      notificationDTO.setSenderAliasId(senderAliasId);
-      Log.v(TAG, "FCM Notification Context ------> " + this.toString());
-      Log.v(TAG, "FCM AKonnectNotificationManager.sendStackNotification " + notificationDTO.toString());
-      new AKonnectNotificationManager(this, notificationDTO).sendStackNotification("2");
     } catch (Exception e) {
       Log.e(TAG, "Exception in Firebase AKonnectNotificationManager.sendStackNotification " + e.getStackTrace().toString());
     }
@@ -355,6 +363,39 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     args.put("message", messageData);
 
     backgroundChannel.invokeMethod("handleBackgroundMessage", args, result);
+  }
+
+
+  private String getTitle(NotificationData notificationData) {
+    String title = null;
+    UserProfile userProfile = SharedPreferencesTask.getUserProfile(backgroundContext);
+    Log.d(TAG, "$$$$$$ msgLag:" + userProfile);
+    if (userProfile != null) {
+      MessageLanguage mLang = MessageLanguage.fromString(userProfile.getPrefMsgLang());
+      Log.d(TAG, "$$$$$$ mLang:" + mLang);
+      if (mLang != null) {
+        switch (mLang) {
+          case ENGLISH:
+            title = notificationData.getEngTitle();
+            break;
+          case GUJARATI:
+            title = notificationData.getGujTitle();
+            break;
+          case HINDI:
+            title = notificationData.getHindiTitle();
+            break;
+        }
+      }
+    }
+    if (ApplicationUtility.isStringNullOrEmpty(title)) {
+      title = notificationData.getEngTitle();
+      if (ApplicationUtility.isStringNullOrEmpty(title))
+        title = notificationData.getGujTitle();
+      if (ApplicationUtility.isStringNullOrEmpty(title))
+        title = notificationData.getHindiTitle();
+    }
+    Log.d(TAG, "$$$$$$ title:" + title);
+    return title;
   }
 
   /**

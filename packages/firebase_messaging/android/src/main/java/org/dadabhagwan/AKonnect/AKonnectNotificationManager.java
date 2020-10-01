@@ -10,7 +10,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.RingtoneManager;
@@ -32,8 +31,6 @@ import java.util.Set;
 //import me.pushy.sdk.PushReceiver;
 
 import org.dadabhagwan.AKonnect.dbo.DBHelper;
-import org.dadabhagwan.AKonnect.dbo.model.NotificationLogTO;
-import org.dadabhagwan.AKonnect.WebServiceCall;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -87,17 +84,17 @@ public class AKonnectNotificationManager {
 
             if(AlarmActiveFlag) {
                 dbHelper = DBHelper.getInstance(context);
-                isMsgIdExist = dbHelper.getNotificationLogByMsgId(notificationDTO.getNotId());
+                isMsgIdExist = dbHelper.getNotificationLogByMsgId(notificationDTO.getMessageId());
             }
 
             if (!isMsgIdExist) {
                 System.out.println(TAG + "\tNotificationDTO" + notificationDTO);
                 Log.d(TAG, "NotificationDTO" + notificationDTO);
-                if (notificationDTO.getSenderAliasId() != null && titlesBySenderId.get(notificationDTO.getSenderAliasId()) == null) {
-                    titlesBySenderId.put(notificationDTO.getSenderAliasId(), notificationDTO.getNotificationTitle());
+                if (notificationDTO.getChannelId() != null && titlesBySenderId.get(notificationDTO.getChannelId()) == null) {
+                    titlesBySenderId.put(notificationDTO.getChannelId(), notificationDTO.getChannelName());
                 }
-                if(notificationDTO.getSenderAliasId() != null && senderAliasMasterPref.getString(notificationDTO.getSenderAliasId()) != null ){
-                    senderAliasMasterPref.saveString(notificationDTO.getSenderAliasId(), notificationDTO.getNotificationTitle());
+                if(notificationDTO.getChannelId() != null && senderAliasMasterPref.getString(notificationDTO.getChannelId()) != null ){
+                    senderAliasMasterPref.saveString(notificationDTO.getChannelId(), notificationDTO.getChannelName());
                 }
 
                 String appName = getAppName(context);
@@ -129,9 +126,9 @@ public class AKonnectNotificationManager {
                 // Insert data into NotificationMaster
                 synchronized (this) {
                     if(AlarmActiveFlag) {
-                        dbHelper.insertNotificationLog(notificationDTO.getNotId());
+                        dbHelper.insertNotificationLog(notificationDTO.getMessageId());
                         try {
-                            sharedPreferencesTask.saveInt(SharedPrefConstants.LAST_MSGID_FROM_NOTIFICATION, notificationDTO.getNotId());
+                            sharedPreferencesTask.saveInt(SharedPrefConstants.LAST_MSGID_FROM_NOTIFICATION, notificationDTO.getMessageId());
                         } catch (Exception e) {
                             Log.e(TAG, " Exception in sharedPreferencesTask "+e.getMessage());
                             e.printStackTrace();
@@ -139,7 +136,7 @@ public class AKonnectNotificationManager {
                     }
                 }
                 // Log Notification received in Firebase DB
-                WebServiceCall.sendNotificationLog(context, pushType, "" + notificationDTO.getNotId());
+                WebServiceCall.sendNotificationLog(context, pushType, "" + notificationDTO.getMessageId());
                 //AlarmSetupReceiver.setAlarm(context);
             } else {
                 Log.d(TAG, "sendStackNotification Record exist in NotificationMaster table :");
@@ -155,22 +152,22 @@ public class AKonnectNotificationManager {
 
     private void notifyBasicNotification(Context context, NotificationDTO notificationDTO) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-                .setContentTitle(notificationDTO.getNotificationTitle())
-                .setTicker(notificationDTO.getNotificationTitle())
-                .setContentText(notificationDTO.getNotificationText())
+                .setContentTitle(notificationDTO.getChannelName())
+                .setTicker(notificationDTO.getChannelName())
+                .setContentText(notificationDTO.getNotificationTitle())
                 .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationDTO.getNotificationText()))
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationDTO.getNotificationTitle()))
                 .setContentIntent(getMainActivityPendingIntent(context))
-                .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getSenderAliasId(),context))
+                .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getChannelId(),context))
                 //.setNumber(1)
                 .setDefaults(Notification.DEFAULT_VIBRATE) // For single Notifications vibration will be there, for grouped Notifications vibrations is removed
                 ;
         setDefaultNotificationProperty(builder,true);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder.setCategory(notificationDTO.getSenderAliasId());
+            builder.setCategory(notificationDTO.getChannelId());
         }
         NotificationManager notificationManager = getNotificationManager();
-        notificationManager.notify(notificationDTO.getNotId(), builder.build());
+        notificationManager.notify(notificationDTO.getMessageId(), builder.build());
     }
 
     private void setDefaultNotificationProperty(NotificationCompat.Builder builder, boolean withSound) {
@@ -221,11 +218,11 @@ public class AKonnectNotificationManager {
                 if (toSetSound && withSound) {
                     previousNotificationTime = new Date();
                     waitMillSecond = 1 * 1000;
-                    if(notificationManager.getNotificationChannel(notificationDTO.getSenderAliasId()) !=null){
-                        notificationChannel = notificationManager.getNotificationChannel(notificationDTO.getSenderAliasId());
+                    if(notificationManager.getNotificationChannel(notificationDTO.getChannelId()) !=null){
+                        notificationChannel = notificationManager.getNotificationChannel(notificationDTO.getChannelId());
                     }else{
-                        notificationChannel = new NotificationChannel(notificationDTO.getSenderAliasId(),
-                                titlesBySenderId.get(notificationDTO.getSenderAliasId()), NotificationManager.IMPORTANCE_HIGH);
+                        notificationChannel = new NotificationChannel(notificationDTO.getChannelId(),
+                                titlesBySenderId.get(notificationDTO.getChannelId()), NotificationManager.IMPORTANCE_HIGH);
                     }
                     if(notificationChannel != null && notificationChannel.getGroup() == null){
                         NotificationChannelGroup notificationChannelGroup = new NotificationChannelGroup(NOTIFICATION_CHANNEL_GROUP_AKONNECT_ID,NOTIFICATION_CHANNEL_GROUP_AKONNECT_DESC);
@@ -339,8 +336,8 @@ public class AKonnectNotificationManager {
                         }
                     }
                 }
-                if(category.equalsIgnoreCase(notificationDTO.getSenderAliasId())) {
-                    lines.add(notificationDTO.getNotificationText());
+                if(category.equalsIgnoreCase(notificationDTO.getChannelId())) {
+                    lines.add(notificationDTO.getNotificationTitle());
                     isNotificationAdded = true;
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -351,9 +348,9 @@ public class AKonnectNotificationManager {
                 totalMessages = totalMessages + lines.size();
             }
             if(!isNotificationAdded) {
-                String category = notificationDTO.getSenderAliasId();
+                String category = notificationDTO.getChannelId();
                 List<String> lines = new ArrayList(1);
-                lines.add(notificationDTO.getNotificationText());
+                lines.add(notificationDTO.getNotificationTitle());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     notifyInboxNotificatonAbove26(category,lines,k++,grpMsg);
                 }else{
@@ -385,7 +382,7 @@ public class AKonnectNotificationManager {
                         .setGroup(group)
                         .setCategory(group)
                         .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
-                        .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getSenderAliasId(),context))
+                        .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getChannelId(),context))
                         .setStyle(inbox)
                         .setContentIntent(getMainActivityPendingIntent(context))
                         .setShowWhen(true)
@@ -413,7 +410,7 @@ public class AKonnectNotificationManager {
                         .setGroup(group)
                         .setCategory(group)
                         .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
-                        .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getSenderAliasId(),context))
+                        .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getChannelId(),context))
                         .setStyle(inbox)
                         .setContentIntent(getMainActivityPendingIntent(context))
                         //.setNumber(totalMessages)
@@ -579,8 +576,8 @@ public class AKonnectNotificationManager {
                 }
             }
 
-            inbox.addLine(notificationDTO.getNotificationTitle() + ": " + notificationDTO.getNotificationText());
-            uniqueGroupName.add(notificationDTO.getNotificationTitle());
+            inbox.addLine(notificationDTO.getChannelName() + ": " + notificationDTO.getNotificationTitle());
+            uniqueGroupName.add(notificationDTO.getChannelName());
             lineCount++;
 
             inbox.setSummaryText(lineCount + " New Messages from " + uniqueGroupName.size() + " groups");
@@ -611,24 +608,24 @@ public class AKonnectNotificationManager {
             builder= new Notification.Builder(context,notificationChannel.getId());
 
             //NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-            builder.setContentTitle(notificationDTO.getNotificationTitle())
-                    .setTicker(notificationDTO.getNotificationTitle())
-                    .setContentText(notificationDTO.getNotificationText())
+            builder.setContentTitle(notificationDTO.getChannelName())
+                    .setTicker(notificationDTO.getChannelName())
+                    .setContentText(notificationDTO.getNotificationTitle())
                     .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
-                    .setStyle(new Notification.BigTextStyle().bigText(notificationDTO.getNotificationText()))
+                    .setStyle(new Notification.BigTextStyle().bigText(notificationDTO.getNotificationTitle()))
                     .setContentIntent(getMainActivityPendingIntent(context))
-                    .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getSenderAliasId(),context))
+                    .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getChannelId(),context))
                     .setWhen(System.currentTimeMillis())
                     .setColor(color)
                     .setAutoCancel(true)
-                    .setCategory(notificationDTO.getSenderAliasId())
+                    .setCategory(notificationDTO.getChannelId())
                     .setShowWhen(true)
                     //.setNumber(1)
             ;
 
             //setDefaultNotificationPropertyAbove26(builder,true,notificationChannel);
             notificationManager.createNotificationChannel(notificationChannel);
-            notificationManager.notify(notificationDTO.getNotId(), builder.build());
+            notificationManager.notify(notificationDTO.getMessageId(), builder.build());
         }
     }
 
