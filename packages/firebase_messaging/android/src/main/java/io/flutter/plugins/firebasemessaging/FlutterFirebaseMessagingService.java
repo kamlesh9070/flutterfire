@@ -21,9 +21,7 @@ import org.dadabhagwan.AKonnect.ApplicationUtility;
 import org.dadabhagwan.AKonnect.MyTestClass;
 import org.dadabhagwan.AKonnect.SharedPreferencesTask;
 import org.dadabhagwan.AKonnect.constants.MessageLanguage;
-import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
-import org.dadabhagwan.AKonnect.dto.NotificationData;
 import org.dadabhagwan.AKonnect.dto.UserProfile;
 
 import io.flutter.plugin.common.MethodChannel;
@@ -33,7 +31,6 @@ import io.flutter.view.FlutterMain;
 import io.flutter.view.FlutterNativeView;
 import io.flutter.view.FlutterRunArguments;
 
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonElement;
 
 import java.util.Collections;
@@ -161,40 +158,20 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
   //private void sendNotification(String title, String messageBody, Map<String, String> data) {
   private void sendNotification(Map<String, Object> data) {
     try {
-      Log.d(TAG, "$$$$$$$$$$$$$$$$ data:" + data);
+      Log.d(TAG, "data:" + data);
       Gson gson = new Gson();
       JsonElement jsonElement = gson.toJsonTree(data);
-      NotificationData notificationData = gson.fromJson(jsonElement, NotificationData.class);
-      Log.d(TAG, "$$$$$$$$$$$$$$$$ notificationData:" + notificationData);
+      NotificationDTO nDTO = gson.fromJson(jsonElement, NotificationDTO.class);
+      Log.d(TAG, "nDTO:" + nDTO);
       int notId = 0;
-      String notificationText = getTitle(notificationData);
-      if(!ApplicationUtility.isStringNullOrEmpty(notificationText)) {
-        try {
-          notId = Integer.parseInt(notificationData.getMessageId());
-        } catch (NumberFormatException e) {
-          Log.e(TAG, "Number format exception - Error parsing Notification ID: " + e.getMessage());
-        } catch (Exception e) {
-          Log.e(TAG, "Number format exception - Error parsing Notification ID" + e.getMessage());
-        }
-
-        NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setMessageId(notId);
-        notificationDTO.setChannelName(notificationData.getChannelName());
-        notificationDTO.setNotificationTitle(notificationText);
-        String channelId = notificationData.getChannelId();
-        if (channelId == null)
-          channelId = notificationData.getChannelName();
-        notificationDTO.setChannelId(channelId);
-        Log.v(TAG, "FCM Notification Context ------> " + this.toString());
-        Log.v(TAG, "FCM AKonnectNotificationManager.sendStackNotification " + notificationDTO.toString());
-        new AKonnectNotificationManager(this, notificationDTO).sendStackNotification("2");
+      setTitle(nDTO);
+      if (!ApplicationUtility.isStrNullOrEmpty(nDTO.getNotificationTitle())) {
+        Log.v(TAG, "FCM AKonnectNotificationManager.sendStackNotification " + nDTO.toString());
+        new AKonnectNotificationManager(this, nDTO).sendStackNotification("2");
       }
-
     } catch (Exception e) {
       Log.e(TAG, "Exception in Firebase AKonnectNotificationManager.sendStackNotification " + e.getStackTrace().toString());
     }
-
-
   }
   /**
    * Called when a new token for the default Firebase project is generated.
@@ -366,7 +343,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
   }
 
 
-  private String getTitle(NotificationData notificationData) {
+  private void setTitle(NotificationDTO nData) {
     String title = null;
     UserProfile userProfile = SharedPreferencesTask.getUserProfile(backgroundContext);
     Log.d(TAG, "$$$$$$ msgLag:" + userProfile);
@@ -376,26 +353,26 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
       if (mLang != null) {
         switch (mLang) {
           case ENGLISH:
-            title = notificationData.getEngTitle();
+            title = nData.getEngTitle();
             break;
           case GUJARATI:
-            title = notificationData.getGujTitle();
+            title = nData.getGujTitle();
             break;
           case HINDI:
-            title = notificationData.getHindiTitle();
+            title = nData.getHindiTitle();
             break;
         }
       }
     }
-    if (ApplicationUtility.isStringNullOrEmpty(title)) {
-      title = notificationData.getEngTitle();
-      if (ApplicationUtility.isStringNullOrEmpty(title))
-        title = notificationData.getGujTitle();
-      if (ApplicationUtility.isStringNullOrEmpty(title))
-        title = notificationData.getHindiTitle();
+    if (ApplicationUtility.isStrNullOrEmpty(title)) {
+      title = nData.getEngTitle();
+      if (ApplicationUtility.isStrNullOrEmpty(title))
+        title = nData.getGujTitle();
+      if (ApplicationUtility.isStrNullOrEmpty(title))
+        title = nData.getHindiTitle();
     }
     Log.d(TAG, "$$$$$$ title:" + title);
-    return title;
+    nData.setNotificationTitle(title);
   }
 
   /**

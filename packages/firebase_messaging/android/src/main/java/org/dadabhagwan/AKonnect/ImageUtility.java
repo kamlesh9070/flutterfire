@@ -2,30 +2,20 @@ package org.dadabhagwan.AKonnect;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
+import android.util.Base64;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.function.Function;
 
-public class ImageDownloadTask extends AsyncTask<Void, Void, Bitmap> {
+public class ImageUtility {
 
-  String strUrl;
-  URL url;
-  Function<Bitmap, Void> onPostExecute;
-
-  ImageDownloadTask(String url, Function<Bitmap, Void> onPostExecute) {
-    this.strUrl = url;
-    this.onPostExecute = onPostExecute;
-  }
-
-  @Override
-  protected Bitmap doInBackground(Void... voids) {
-    URL url = stringToURL();
+  public static Bitmap getDownloadedImage(String strUrl) {
+    URL url = stringToURL(strUrl);
     HttpURLConnection connection = null;
     try {
       connection = (HttpURLConnection) url.openConnection();
@@ -39,12 +29,24 @@ public class ImageDownloadTask extends AsyncTask<Void, Void, Bitmap> {
     return null;
   }
 
-  // When all async task done
-  protected void onPostExecute(Bitmap result) {
-    this.onPostExecute(result);
+  public static String bitMapToString(Bitmap bitmap) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+    byte[] b = baos.toByteArray();
+    return Base64.encodeToString(b, Base64.DEFAULT);
   }
 
-  protected URL stringToURL() {
+  public static Bitmap stringToBitMap(String encodedString) {
+    try {
+      byte[] encodeByte = Base64.decode(encodedString, Base64.DEFAULT);
+      return BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
+    } catch (Exception e) {
+      e.getMessage();
+      return null;
+    }
+  }
+
+  public static URL stringToURL(String strUrl) {
     try {
       return new URL(strUrl);
     } catch (MalformedURLException e) {

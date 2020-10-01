@@ -297,7 +297,7 @@ public class AKonnectNotificationManager {
 
       Log.d(TAG, "sendNotificationAbove23API  activeNotifications --> " + activeNotifications.toString());
 
-      // step through all the active StatusBarNotifications and
+      // step through all the active StatusBarNotifications and load groupedNotification
       for (StatusBarNotification sbn : activeNotifications) {
         Log.d(TAG, "sendNotificationAbove23API  StatusBarNotification -->  " + sbn.toString());
         Log.d(TAG, "sendNotificationAbove23API  sbn.getNotification() -->  " + sbn.getNotification().toString());
@@ -348,13 +348,13 @@ public class AKonnectNotificationManager {
         totalMessages = totalMessages + lines.size();
       }
       if (!isNotificationAdded) {
-        String category = notificationDTO.getChannelId();
+        String channelId = notificationDTO.getChannelId();
         List<String> lines = new ArrayList(1);
         lines.add(notificationDTO.getNotificationTitle());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-          notifyInboxNotificatonAbove26(category, lines, k++, grpMsg);
+          notifyInboxNotificatonAbove26(channelId, lines, k++, grpMsg);
         } else {
-          notifyInboxNotificaton(category, lines, k++, grpMsg);
+          notifyInboxNotificaton(channelId, lines, k++, grpMsg);
         }
         totalMessages++;
         totalGroup++;

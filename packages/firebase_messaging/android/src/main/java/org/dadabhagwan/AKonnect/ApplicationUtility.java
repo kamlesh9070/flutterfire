@@ -17,17 +17,21 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
+import org.dadabhagwan.AKonnect.dto.ChannelDetails;
+import org.dadabhagwan.AKonnect.dto.NotificationDTO;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
-
-import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
-import org.dadabhagwan.AKonnect.dto.NotificationDTO;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class ApplicationUtility {
 
@@ -72,27 +76,34 @@ public class ApplicationUtility {
     return context.getSharedPreferences(sharedPref, MODE_PRIVATE);
   }
 
-  public static Bitmap getSenderImage(String senderId, Context context) {
-    Bitmap image = null;
-    if (senderId == null) {
-      image = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(DEFAULT_LOGO, "drawable", context.getPackageName()));
-    } else {
-      SharedPreferences sharedPreferences = getAkonnectSharedPreferences(context, PREF_FILE_NAME);
-      Map<String, ?> allEntries = sharedPreferences.getAll();
-      for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-        Log.d(TAG, "map values" + entry.getKey() + ": " + entry.getValue().toString());
+  public static Bitmap getSenderImage(String channelId, Context context) {
+    Bitmap channelImg = null;
+    try {
+      if (!isStrNullOrEmpty(channelId)) {
+        ChannelDetails channel = SharedPreferencesTask.getChannelDetails(channelId, context);
+        if (channel != null && !isStrNullOrEmpty(channel.getAvatarUrl())) {
+          SharedPreferencesTask sharedPreferences = SharedPreferencesTask.getSharedPreferenceTask(context, SharedPrefConstants.PREF_CHANNEL_IMAGE);
+          String bitMapStr = sharedPreferences.getString(channel.getAvatarUrl());
+          if (isStrNullOrEmpty(bitMapStr)) {
+            channelImg = ImageUtility.getDownloadedImage(channel.getAvatarUrl());
+            if (channelImg != null) {
+              bitMapStr = ImageUtility.bitMapToString(channelImg);
+              sharedPreferences.saveString(channel.getChannelId(), bitMapStr);
+            }
+          } else
+            channelImg = ImageUtility.stringToBitMap(bitMapStr);
+        }
       }
-
-      String encodedImage = sharedPreferences.getString(String.valueOf(senderId), null);
-      if (encodedImage != null && !"".equals(encodedImage.trim())) {
-        encodedImage = encodedImage.replaceFirst("^data:image/[^;]*;base64,?", "");
-        byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
-        image = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-      } else {
-        image = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(DEFAULT_LOGO, "drawable", context.getPackageName()));
-      }
+    } catch (Exception e) {
+      Log.e(TAG, "Error while getting sender Image, e:" e.getMessage(), e);
     }
-    return image;
+    if (channelImg == null)
+      channelImg = getDefaultChannelImg(context);
+    return channelImg;
+  }
+
+  public static Bitmap getDefaultChannelImg(Context context) {
+    return BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(DEFAULT_LOGO, "drawable", context.getPackageName()));
   }
 
   public static void showMessageOKCancel(Activity activity, String title, String message, DialogInterface.OnClickListener clickListener) {
@@ -310,7 +321,7 @@ public class ApplicationUtility {
             }
         }*/
 
-  public static boolean isStringNullOrEmpty(String str) {
+  public static boolean isStrNullOrEmpty(String str) {
     return str == null || str.isEmpty();
   }
 }

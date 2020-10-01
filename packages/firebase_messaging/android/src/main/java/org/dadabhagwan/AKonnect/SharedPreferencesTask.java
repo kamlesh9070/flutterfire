@@ -5,15 +5,37 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
+import org.dadabhagwan.AKonnect.dto.ChannelDetails;
 import org.dadabhagwan.AKonnect.dto.UserProfile;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SharedPreferencesTask {
 
   protected static final String TAG = "SharedPrefTask";
   String sharedPrefFileName;
   Context context;
+
+  private static Map<String, SharedPreferencesTask> sharedPreferencesTaskMap = new HashMap<>();
+
+  private static ArrayList<ChannelDetails> channelDetails;
+  private static Map<String, ChannelDetails> channelById = new HashMap<>();
+  private static UserProfile userProfile;
+
+  public static SharedPreferencesTask getSharedPreferenceTask(Context context, String sharedPrefFileName) {
+    SharedPreferencesTask sTask = sharedPreferencesTaskMap.get(sharedPrefFileName);
+    if (sTask == null) {
+      sTask = new SharedPreferencesTask(context, sharedPrefFileName);
+      sharedPreferencesTaskMap.put(sharedPrefFileName, sTask);
+    }
+    return sTask;
+  }
 
   public SharedPreferencesTask(Context context, String sharedPrefFileName) {
     this.sharedPrefFileName = sharedPrefFileName;
@@ -117,6 +139,34 @@ public class SharedPreferencesTask {
       String userProfileJson = sharedPreferencesTask.getString(SharedPrefConstants.FLUTTER_USERPROFILE);
       Log.d(TAG, "$$$$$ userProfileJson:" + userProfileJson);
       return new Gson().fromJson(userProfileJson, UserProfile.class);
+    } catch (Exception e) {
+      Log.e(TAG, "Error while getting User Profile", e);
+    }
+    return null;
+  }
+
+  public static ChannelDetails getChannelDetails(String channelId, Context context) {
+    getChannelDetailsList(context);
+    if (channelById.isEmpty()) {
+      for (ChannelDetails channelDetails : channelDetails) {
+        channelById.put(channelDetails.getChannelId(), channelDetails);
+      }
+    }
+    return channelById.get(channelId);
+  }
+
+  public static ArrayList<ChannelDetails> getChannelDetailsList(Context context) {
+    try {
+      if (channelDetails == null) {
+        SharedPreferencesTask sharedPreferencesTask = SharedPreferencesTask.getSharedPreferenceTask(context, SharedPrefConstants.FILE_NAME_APP_MAIN_PREF);
+        String channelsStr = sharedPreferencesTask.getString(SharedPrefConstants.FLUTTER_CHANNELDETAILS);
+        if (!ApplicationUtility.isStrNullOrEmpty(channelsStr)) {
+          Type channelListType = new TypeToken<ArrayList<ChannelDetails>>() {
+          }.getType();
+          channelDetails = new Gson().fromJson(channelsStr, channelListType);
+        }
+      }
+      return channelDetails;
     } catch (Exception e) {
       Log.e(TAG, "Error while getting User Profile", e);
     }
