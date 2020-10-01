@@ -6,5 +6,5 @@ package org.dadabhagwan.AKonnect;
 
 public interface AsyncResponse {
 
-    public void processFinish(String output);
+  public void processFinish(String output);
 }

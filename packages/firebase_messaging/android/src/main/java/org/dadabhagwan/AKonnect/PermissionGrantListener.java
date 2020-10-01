@@ -5,8 +5,8 @@ package org.dadabhagwan.AKonnect;
  */
 
 public interface PermissionGrantListener {
-    /**
-     * Permission granted
-     */
-    void OnGranted();
+  /**
+   * Permission granted
+   */
+  void OnGranted();
 }

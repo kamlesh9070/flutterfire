@@ -16,16 +16,26 @@ import java.lang.reflect.Method;
  */
 public class NetworkUtils {
 
-  /** The absence of a connection type. */
+  /**
+   * The absence of a connection type.
+   */
   public static final int TYPE_NONE = -1;
 
-  /** Unknown network class. */
+  /**
+   * Unknown network class.
+   */
   public static final int NETWORK_CLASS_UNKNOWN = 0;
-  /** Class of broadly defined "2G" networks. */
+  /**
+   * Class of broadly defined "2G" networks.
+   */
   public static final int NETWORK_CLASS_2_G = 1;
-  /** Class of broadly defined "3G" networks. */
+  /**
+   * Class of broadly defined "3G" networks.
+   */
   public static final int NETWORK_CLASS_3_G = 2;
-  /** Class of broadly defined "4G" networks. */
+  /**
+   * Class of broadly defined "4G" networks.
+   */
   public static final int NETWORK_CLASS_4_G = 3;
 
   /**
@@ -36,14 +46,14 @@ public class NetworkUtils {
    *
    * @return a {@link NetworkInfo} object for the current default network or {@code null} if no
    * network default network is currently active
-   *
+   * <p>
    * This method requires the call to hold the permission
    * {@link android.Manifest.permission#ACCESS_NETWORK_STATE}.
    * @see ConnectivityManager#getActiveNetworkInfo()
    */
   public static NetworkInfo getInfo(Context context) {
     return ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE))
-        .getActiveNetworkInfo();
+      .getActiveNetworkInfo();
   }
 
   /**
@@ -77,18 +87,24 @@ public class NetworkUtils {
     return info.getSubtype();
   }
 
-  /** Returns the NETWORK_TYPE_xxxx for current data connection. */
+  /**
+   * Returns the NETWORK_TYPE_xxxx for current data connection.
+   */
   public static int getNetworkType(Context context) {
     return ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE))
-        .getNetworkType();
+      .getNetworkType();
   }
 
-  /** Check if there is any connectivity */
+  /**
+   * Check if there is any connectivity
+   */
   public static boolean isConnected(Context context) {
     return getType(context) != TYPE_NONE;
   }
 
-  /** Check if there is any connectivity to a Wifi network */
+  /**
+   * Check if there is any connectivity to a Wifi network
+   */
   public static boolean isWifiConnection(Context context) {
     NetworkInfo info = getInfo(context);
     if (info == null || !info.isConnected()) {
@@ -102,7 +118,9 @@ public class NetworkUtils {
     }
   }
 
-  /** Check if there is any connectivity to a mobile network */
+  /**
+   * Check if there is any connectivity to a mobile network
+   */
   public static boolean isMobileConnection(Context context) {
     NetworkInfo info = getInfo(context);
     if (info == null || !info.isConnected()) {
@@ -116,7 +134,9 @@ public class NetworkUtils {
     }
   }
 
-  /** Check if the current connection is fast. */
+  /**
+   * Check if the current connection is fast.
+   */
   public static boolean isConnectionFast(Context context) {
     NetworkInfo info = getInfo(context);
     if (info == null || !info.isConnected()) {
@@ -142,7 +162,7 @@ public class NetworkUtils {
   }
 
   private static int getNetworkClassReflect(int networkType)
-      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Method getNetworkClass = TelephonyManager.class.getDeclaredMethod("getNetworkClass", int.class);
     if (!getNetworkClass.isAccessible()) {
       getNetworkClass.setAccessible(true);
@@ -211,6 +231,7 @@ public class NetworkUtils {
         return "UNKNOWN";
     }
   }
+
   private NetworkUtils() {
     throw new AssertionError();
   }

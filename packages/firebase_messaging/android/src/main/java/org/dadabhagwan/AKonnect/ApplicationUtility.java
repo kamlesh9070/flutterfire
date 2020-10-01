@@ -31,201 +31,201 @@ import org.json.JSONObject;
 
 public class ApplicationUtility {
 
-    protected static final String TAG = "AKonnect[AppUtility]";
+  protected static final String TAG = "AKonnect[AppUtility]";
 
-    public static boolean isPopupOpen = false;
+  public static boolean isPopupOpen = false;
 
-    public static final String PREF_FILE_NAME = "SenderImage";
+  public static final String PREF_FILE_NAME = "SenderImage";
 
-    private static final String DEFAULT_LOGO = "amlogo";
+  private static final String DEFAULT_LOGO = "amlogo";
 
-    public static final String DEVICE_XIAOMI = "xiaomi";
-    public static final String DEVICE_HUAWEI = "HUAWEI";
-    public static final String DEVICE_ONEPLUS = "OnePlus";
-    //public  HttpPostAsyncTask asyncTask =new HttpPostAsyncTask(null,null);
-    protected static final int REQUEST_CHECK_SETTINGS = 0x1;
+  public static final String DEVICE_XIAOMI = "xiaomi";
+  public static final String DEVICE_HUAWEI = "HUAWEI";
+  public static final String DEVICE_ONEPLUS = "OnePlus";
+  //public  HttpPostAsyncTask asyncTask =new HttpPostAsyncTask(null,null);
+  protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
 
-    public static boolean isDeviceManufacturerSupported(Context context) {
-        try{
-            String manufacturer = Build.MANUFACTURER;
-            String manufacturerList="";
-            SharedPreferences sharedPreferences = ApplicationUtility.getAkonnectSharedPreferences(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
+  public static boolean isDeviceManufacturerSupported(Context context) {
+    try {
+      String manufacturer = Build.MANUFACTURER;
+      String manufacturerList = "";
+      SharedPreferences sharedPreferences = ApplicationUtility.getAkonnectSharedPreferences(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
 
-            if(sharedPreferences != null){
-                manufacturerList = sharedPreferences.getString(SharedPrefConstants.DEVICE_MANUFACTURER_LIST, "");
-            }
-            Log.d(TAG,"Current Device: "+manufacturer +" , Device manufacturer List from Server is : "+manufacturerList);
+      if (sharedPreferences != null) {
+        manufacturerList = sharedPreferences.getString(SharedPrefConstants.DEVICE_MANUFACTURER_LIST, "");
+      }
+      Log.d(TAG, "Current Device: " + manufacturer + " , Device manufacturer List from Server is : " + manufacturerList);
 
-            if(manufacturer != null && manufacturerList != "" && manufacturerList.toLowerCase().contains(manufacturer.toLowerCase())) {
-                return true;
-            }
-        }catch(Exception e){
-            Log.d(TAG, "Exception in isDeviceManufacturerSupported: " + e.getMessage());
-            e.printStackTrace();
+      if (manufacturer != null && manufacturerList != "" && manufacturerList.toLowerCase().contains(manufacturer.toLowerCase())) {
+        return true;
+      }
+    } catch (Exception e) {
+      Log.d(TAG, "Exception in isDeviceManufacturerSupported: " + e.getMessage());
+      e.printStackTrace();
+    }
+
+    return false;
+  }
+
+  public static SharedPreferences getAkonnectSharedPreferences(Context context, String sharedPref) {
+    return context.getSharedPreferences(sharedPref, MODE_PRIVATE);
+  }
+
+  public static Bitmap getSenderImage(String senderId, Context context) {
+    Bitmap image = null;
+    if (senderId == null) {
+      image = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(DEFAULT_LOGO, "drawable", context.getPackageName()));
+    } else {
+      SharedPreferences sharedPreferences = getAkonnectSharedPreferences(context, PREF_FILE_NAME);
+      Map<String, ?> allEntries = sharedPreferences.getAll();
+      for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+        Log.d(TAG, "map values" + entry.getKey() + ": " + entry.getValue().toString());
+      }
+
+      String encodedImage = sharedPreferences.getString(String.valueOf(senderId), null);
+      if (encodedImage != null && !"".equals(encodedImage.trim())) {
+        encodedImage = encodedImage.replaceFirst("^data:image/[^;]*;base64,?", "");
+        byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
+        image = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+      } else {
+        image = BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(DEFAULT_LOGO, "drawable", context.getPackageName()));
+      }
+    }
+    return image;
+  }
+
+  public static void showMessageOKCancel(Activity activity, String title, String message, DialogInterface.OnClickListener clickListener) {
+    if (!isPopupOpen) {
+      android.app.AlertDialog.Builder builder;
+      builder = new android.app.AlertDialog.Builder(activity, android.app.AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+      builder.setMessage(Html.fromHtml(message))
+        .setPositiveButton("Ok", clickListener)
+        .setNegativeButton("Cancel", clickListener);
+      if (title != null && title.trim() != "") {
+        builder.setTitle(Html.fromHtml(title));
+      }
+      Dialog dialog = builder.create();
+      dialog.setCancelable(false);
+      dialog.setCanceledOnTouchOutside(false);
+      dialog.show();
+      synchronized (ApplicationUtility.class) {
+        isPopupOpen = true;
+      }
+    }
+  }
+
+  public static void requestStoragePermission(final Activity activity) {
+    activity.runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        ViewGroup viewgroup = (ViewGroup) activity.findViewById(android.R.id.content).getParent();
+        View view = viewgroup.getChildAt(0);
+        for (int i = 0; i < viewgroup.getChildCount(); i++) {
+          viewgroup.getChildAt(i);
         }
 
-        return false;
-    }
-
-    public static SharedPreferences getAkonnectSharedPreferences(Context context, String sharedPref) {
-        return context.getSharedPreferences(sharedPref, MODE_PRIVATE);
-    }
-
-    public static Bitmap getSenderImage(String senderId, Context context) {
-        Bitmap image = null;
-        if(senderId == null) {
-            image = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(DEFAULT_LOGO, "drawable", context.getPackageName()));
-        } else {
-            SharedPreferences sharedPreferences = getAkonnectSharedPreferences(context,PREF_FILE_NAME);
-            Map<String, ?> allEntries = sharedPreferences.getAll();
-            for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-                Log.d(TAG, "map values"+ entry.getKey() + ": " + entry.getValue().toString());
-            }
-
-            String encodedImage = sharedPreferences.getString(String.valueOf(senderId),null);
-            if(encodedImage != null && !"".equals(encodedImage.trim())) {
-                encodedImage = encodedImage.replaceFirst("^data:image/[^;]*;base64,?","");
-                byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
-                image = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-            } else {
-                image = BitmapFactory.decodeResource(context.getResources(),context.getResources().getIdentifier(DEFAULT_LOGO, "drawable", context.getPackageName()));
-            }
-        }
-        return image;
-    }
-
-    public static void showMessageOKCancel(Activity activity, String title, String message, DialogInterface.OnClickListener clickListener) {
-        if (!isPopupOpen) {
-            android.app.AlertDialog.Builder builder;
-            builder = new android.app.AlertDialog.Builder(activity, android.app.AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
-            builder.setMessage(Html.fromHtml(message))
-                    .setPositiveButton("Ok", clickListener)
-                    .setNegativeButton("Cancel", clickListener);
-            if (title != null && title.trim() != "") {
-                builder.setTitle(Html.fromHtml(title));
-            }
-            Dialog dialog = builder.create();
-            dialog.setCancelable(false);
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
-            synchronized (ApplicationUtility.class) {
-                isPopupOpen = true;
-            }
-        }
-    }
-
-    public static void requestStoragePermission(final Activity activity) {
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ViewGroup viewgroup = (ViewGroup) activity.findViewById(android.R.id.content).getParent();
-                View view = viewgroup.getChildAt(0);
-                for (int i = 0; i < viewgroup.getChildCount(); i++) {
-                    viewgroup.getChildAt(i);
-                }
-
-                PermissionProcessor permissionProcessor = new PermissionProcessor(activity, view);
-                permissionProcessor.setPermissionGrantListener(new PermissionGrantListener() {
-                    public void OnGranted() {
-                        System.out.println("Inside on granted");
-                    }
-                });
-
-                permissionProcessor.askForPermissionExternalStorage();
-            }
+        PermissionProcessor permissionProcessor = new PermissionProcessor(activity, view);
+        permissionProcessor.setPermissionGrantListener(new PermissionGrantListener() {
+          public void OnGranted() {
+            System.out.println("Inside on granted");
+          }
         });
+
+        permissionProcessor.askForPermissionExternalStorage();
+      }
+    });
+  }
+
+
+  public static boolean isAppOnForeground(Context context) {
+    try {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        return isAppOnForegroundFor21AndAbove(context);
+      } else {
+        return isAppOnForegroundForBelow21(context);
+      }
+    } catch (Exception e) {
+      System.out.println("Exception while getting forground app : Message:" + e.getMessage());
+      e.printStackTrace();
     }
+    return false;
+  }
 
-
-
-    public static boolean isAppOnForeground(Context context) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                return isAppOnForegroundFor21AndAbove(context);
-            } else {
-                return isAppOnForegroundForBelow21(context);
-            }
-        } catch (Exception e) {
-            System.out.println("Exception while getting forground app : Message:" + e.getMessage());
-            e.printStackTrace();
-        }
-        return false;
+  private static boolean isAppOnForegroundForBelow21(Context context) {
+    ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+    ActivityManager.RunningTaskInfo foregroundTaskInfo = activityManager.getRunningTasks(1).get(0);
+    String topPackageName = foregroundTaskInfo.topActivity.getPackageName();
+    if (context.getPackageName().equals(topPackageName)) {
+      return true;
     }
+    return false;
+  }
 
-    private static boolean isAppOnForegroundForBelow21(Context context) {
-        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        ActivityManager.RunningTaskInfo foregroundTaskInfo = activityManager.getRunningTasks(1).get(0);
-        String topPackageName = foregroundTaskInfo.topActivity.getPackageName();
-        if (context.getPackageName().equals(topPackageName)) {
-            return true;
-        }
-        return false;
+  private static boolean isAppOnForegroundFor21AndAbove(Context context) {
+    ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+    List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+    if (appProcesses == null) {
+      return false;
     }
+    final String packageName = context.getPackageName();
+    for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+      if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName.equals(packageName) && appProcess.importanceReasonCode == 0) {
+        return true;
+      }
+    }
+    return false;
+  }
 
-    private static boolean isAppOnForegroundFor21AndAbove(Context context) {
-        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
-        if (appProcesses == null) {
-            return false;
-        }
-        final String packageName = context.getPackageName();
-        for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
-            if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName.equals(packageName) && appProcess.importanceReasonCode == 0) {
-                return true;
-            }
-        }
-        return false;
+  public static boolean isOnline(Context context) {
+    ConnectivityManager connectivityManager;
+    boolean connected = false;
+    try {
+      connectivityManager = (ConnectivityManager) context
+        .getSystemService(Context.CONNECTIVITY_SERVICE);
+      NetworkInfo networkInfo = connectivityManager
+        .getActiveNetworkInfo();
+      connected = networkInfo != null && networkInfo.isConnected();
+      if (networkInfo != null)
+        Log.d(TAG, " isOnline networkInfo" + networkInfo.toString());
+    } catch (Exception e) {
+      Log.d(TAG, e.toString());
+      e.printStackTrace();
     }
-    public static boolean isOnline(Context context) {
-        ConnectivityManager connectivityManager;
-        boolean connected = false;
-        try {
-            connectivityManager = (ConnectivityManager) context
-                    .getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = connectivityManager
-                    .getActiveNetworkInfo();
-            connected = networkInfo != null && networkInfo.isConnected();
-            if(networkInfo !=null)
-                Log.d(TAG, " isOnline networkInfo" + networkInfo.toString());
-        } catch (Exception e) {
-            Log.d(TAG, e.toString());
-            e.printStackTrace();
-        }
-        return connected;
-    }
+    return connected;
+  }
 
-    public static boolean generateNotificationsForFetchMessages(Context context, JSONArray resultArray) {
-        boolean isSucceeded = true;
-        try {
-            for(int i=0; i< resultArray.length();i++){
-                JSONObject jsonObject=resultArray.getJSONObject(i);
+  public static boolean generateNotificationsForFetchMessages(Context context, JSONArray resultArray) {
+    boolean isSucceeded = true;
+    try {
+      for (int i = 0; i < resultArray.length(); i++) {
+        JSONObject jsonObject = resultArray.getJSONObject(i);
 
-                NotificationDTO notificationDTO = new NotificationDTO();
-                notificationDTO.setMessageId(jsonObject.getInt("MsgId"));
-                notificationDTO.setChannelName(jsonObject.getString("Title"));
-                notificationDTO.setNotificationTitle(jsonObject.getString("MsgText"));
-                notificationDTO.setChannelId(jsonObject.getString("SenderAliasId") == null ? jsonObject.getString("Title") : jsonObject.getString("SenderAliasId"));
-                Log.d(TAG, " generateNotificationsForFetchMessages  notificationDTO" + notificationDTO.toString());
-                new AKonnectNotificationManager(context, notificationDTO).sendStackNotification("3"); // 3 - Notifications fetched from server
-            }
-        } catch (Exception e) {
-            isSucceeded=false;
-            Log.d(TAG, "Exception in generateNotificationsForFetchMessages --> "+e.toString());
-            e.printStackTrace();
-        }
-        return isSucceeded;
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setMessageId(jsonObject.getInt("MsgId"));
+        notificationDTO.setChannelName(jsonObject.getString("Title"));
+        notificationDTO.setNotificationTitle(jsonObject.getString("MsgText"));
+        notificationDTO.setChannelId(jsonObject.getString("SenderAliasId") == null ? jsonObject.getString("Title") : jsonObject.getString("SenderAliasId"));
+        Log.d(TAG, " generateNotificationsForFetchMessages  notificationDTO" + notificationDTO.toString());
+        new AKonnectNotificationManager(context, notificationDTO).sendStackNotification("3"); // 3 - Notifications fetched from server
+      }
+    } catch (Exception e) {
+      isSucceeded = false;
+      Log.d(TAG, "Exception in generateNotificationsForFetchMessages --> " + e.toString());
+      e.printStackTrace();
     }
+    return isSucceeded;
+  }
 
-    public static long getCurrentTimestamp() {
-        long currentTimestamp=0;
-        try {
-             currentTimestamp = System.currentTimeMillis();
-        } catch (Exception e) {
-            Log.d(TAG, e.toString());
-        }
-        return currentTimestamp;
+  public static long getCurrentTimestamp() {
+    long currentTimestamp = 0;
+    try {
+      currentTimestamp = System.currentTimeMillis();
+    } catch (Exception e) {
+      Log.d(TAG, e.toString());
     }
+    return currentTimestamp;
+  }
 
 
 /*    private static boolean isCurrentAppInBackground(Context context) {
@@ -310,7 +310,7 @@ public class ApplicationUtility {
             }
         }*/
 
-        public static boolean isStringNullOrEmpty(String str) {
-          return str == null || str.isEmpty();
-        }
+  public static boolean isStringNullOrEmpty(String str) {
+    return str == null || str.isEmpty();
+  }
 }
