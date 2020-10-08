@@ -12,13 +12,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.text.Html;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.dto.ChannelDetails;
@@ -26,10 +22,7 @@ import org.dadabhagwan.AKonnect.dto.NotificationDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -88,7 +81,7 @@ public class ApplicationUtility {
             channelImg = ImageUtility.getDownloadedImage(channel.getAvatarUrl());
             if (channelImg != null) {
               bitMapStr = ImageUtility.bitMapToString(channelImg);
-              sharedPreferences.saveString(channel.getChannelId(), bitMapStr);
+              sharedPreferences.saveString(channel.getAvatarUrl(), bitMapStr);
             }
           } else
             channelImg = ImageUtility.stringToBitMap(bitMapStr);

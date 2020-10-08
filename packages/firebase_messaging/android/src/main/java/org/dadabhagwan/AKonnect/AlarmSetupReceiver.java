@@ -13,6 +13,7 @@ import android.os.Build;
 import java.util.Date;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
+import org.dadabhagwan.AKonnect.dto.InitAppResponse;
 
 public class AlarmSetupReceiver extends BroadcastReceiver {
 
@@ -34,31 +35,28 @@ public class AlarmSetupReceiver extends BroadcastReceiver {
     boolean AlarmActiveFlag = true;
     try {
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
-      AlarmActiveFlag = sharedPreferencesTask.getBoolean(SharedPrefConstants.ALARM_ACTIVE_FLAG);
+      InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      AlarmActiveFlag = initAppResponse.isAlarmActiveFlag();
       long currentTimestamp = ApplicationUtility.getCurrentTimestamp();
 
       if (AlarmActiveFlag) {
-        int alarmInterval = sharedPreferencesTask.getInt(SharedPrefConstants.REPEAT_ALARM_TIME_IN_MINUTES);
-        int offsetInterval = sharedPreferencesTask.getInt(SharedPrefConstants.ALARM_OFFSET_WINDOW_IN_SECONDS);
+        int alarmInterval = initAppResponse.getRepeatAlarmTimeInMinutes();
+        int offsetInterval = initAppResponse.getAlarmOffsetWindowInMinutes();
 
         alarmInterval = alarmInterval * 60 * 1000; // Converting alarmInterval to millisecs
         offsetInterval = offsetInterval * 60 * 1000; // Converting offsetInterval to millisecs
-        //offsetInterval =  offsetInterval * 1000; // Converting offsetInterval to millisecs
 
         //Adding Random milliseconds to Alarm, to avoid concurrent hit to servers from each device
         //scheduleAlramTimestamp=	currentTimestamp + alarmInterval + (long) (Math.random()*offsetInterval);
         long tempAlarmInterval = alarmInterval + (long) (Math.random() * offsetInterval);
-
         Intent alarm = new Intent(context, AlarmReceiver.class);
         PendingIntent recurringAlarm = PendingIntent.getBroadcast(context, 973132, alarm, 0);//973132 - is just id to identify the alarm
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
         alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
           SystemClock.elapsedRealtime(), tempAlarmInterval, recurringAlarm);
-
         sharedPreferencesTask.saveLong(SharedPrefConstants.LAST_SEEN_TIMESTAMP, currentTimestamp);
         sharedPreferencesTask.saveString(SharedPrefConstants.NEXT_ALARM_SCHEDULED_TIME, "" + new Date(currentTimestamp + tempAlarmInterval));
-
         Log.d(TAG, "AlarmSetupReceiver.setAlarm ---> SystemClock.elapsedRealtime(): " + new Date(SystemClock.elapsedRealtime()) + " , \n  Next Alarm Schedule at  ----------------------->" + new Date(currentTimestamp + tempAlarmInterval)
           + "\n , Current Time is : " + new Date(currentTimestamp));
 

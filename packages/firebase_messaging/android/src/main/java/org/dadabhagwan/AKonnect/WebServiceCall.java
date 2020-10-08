@@ -6,6 +6,8 @@ import android.util.Log;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.dbo.DBHelper;
+import org.dadabhagwan.AKonnect.dto.DeviceDetail;
+import org.dadabhagwan.AKonnect.dto.UserProfile;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -48,9 +50,10 @@ public class WebServiceCall {
       if (ApiUrl != null && ApiUrl.trim() != "") {
         SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
         String ApiKey = sharedPreferencesTask.getString(SharedPrefConstants.API_KEY);
-        String DeviceModel = sharedPreferencesTask.getString(SharedPrefConstants.DEVICE_MODEL);
-        String DeviceOsVersion = sharedPreferencesTask.getString(SharedPrefConstants.DEVICE_OS_VERSION);
-        String AppVersion = sharedPreferencesTask.getString(SharedPrefConstants.APP_VERSION);
+        DeviceDetail deviceDetail = SharedPreferencesTask.getDeviceDetail(context);
+        String DeviceModel = deviceDetail.getDeviceModel();
+        String DeviceOsVersion = deviceDetail.getDeviceOs();
+        String AppVersion = deviceDetail.getAppVersion();
         String NetworkState = NetworkUtils.getNetworkState(context);
         try {
           ActivationSrNo = Integer.parseInt(sharedPreferencesTask.getString(SharedPrefConstants.ACTIVATION_SRNO));
@@ -87,18 +90,20 @@ public class WebServiceCall {
   public static void fetchMsgFromServer(Context context, AsyncResponseListner asyncResponseListner) {
     try {
       int lastMsgIdFromInbox = 0;
-      int maxMsgId = 0;
-      int lastNotificationId = 0;
+      long maxMsgId = 0;
+      long lastNotificationId = 0;
       int ActivationSrNo = 0;
 
       String latestMessagesByMsgIdApiUrl = getLatestMessagesByMsgIdApiUrl(context);
       if (latestMessagesByMsgIdApiUrl != null && latestMessagesByMsgIdApiUrl.trim() != "") {
         SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
-        lastMsgIdFromInbox = sharedPreferencesTask.getInt(SharedPrefConstants.LAST_MSGID_FROM_INBOX);
+
         lastNotificationId = sharedPreferencesTask.getInt(SharedPrefConstants.LAST_MSGID_FROM_NOTIFICATION);
+        lastMsgIdFromInbox = sharedPreferencesTask.getInt(SharedPrefConstants.LAST_MSGID_FROM_INBOX);
         maxMsgId = (lastNotificationId >= lastMsgIdFromInbox) ? lastNotificationId : lastMsgIdFromInbox;
 
-        int SubscriberId = sharedPreferencesTask.getInt(SharedPrefConstants.SUBSCRIBER_ID);
+        UserProfile userProfile = SharedPreferencesTask.getUserProfile(context);
+        String subscriberId = userProfile.getSubscriber();
         try {
           ActivationSrNo = Integer.parseInt(sharedPreferencesTask.getString(SharedPrefConstants.ACTIVATION_SRNO));
         } catch (Exception e) {
@@ -109,10 +114,10 @@ public class WebServiceCall {
         //For testing only
         //maxMsgId=10645;
 
-        if (SubscriberId > 0 && ActivationSrNo > 0) {
+        if (subscriberId != null && ActivationSrNo > 0) {
           Map<String, String> postData = new HashMap<String, String>();
           postData.put("ActivationSrNo", "" + ActivationSrNo);
-          postData.put("SubscriberId", "" + SubscriberId);
+          postData.put("SubscriberId", "" + subscriberId);
           postData.put("MsgId", "" + maxMsgId);
 
           Log.d(TAG, "fetchMsgFromServer :: lastMsgIdFromInbox : " + lastMsgIdFromInbox + " , lastNotificationId : " + lastNotificationId

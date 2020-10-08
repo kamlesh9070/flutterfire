@@ -4,6 +4,9 @@ import com.google.gson.annotations.SerializedName;
 
 public class UserProfile {
 
+  @SerializedName("subscriber")
+  String subscriber;
+
   @SerializedName("app_lang")
   String appLanguage = "English";
   @SerializedName("pref_msg_lang")
@@ -25,10 +28,19 @@ public class UserProfile {
     this.prefMsgLang = prefMsgLang;
   }
 
+  public String getSubscriber() {
+    return subscriber;
+  }
+
+  public void setSubscriber(String subscriber) {
+    this.subscriber = subscriber;
+  }
+
   @Override
   public String toString() {
     return "UserProfile{" +
-      "appLanguage='" + appLanguage + '\'' +
+      "subscriber='" + subscriber + '\'' +
+      ", appLanguage='" + appLanguage + '\'' +
       ", prefMsgLang='" + prefMsgLang + '\'' +
       '}';
   }

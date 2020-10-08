@@ -24,6 +24,8 @@ public class NotificationDTO {
   @SerializedName("avatar_url")
   String avatarUrl;
 
+  @SerializedName("recalled_message_id")
+  int recalledMessageId;
 
   @Override
   public String toString() {
@@ -37,7 +39,12 @@ public class NotificationDTO {
       ", senderSubscriber='" + senderSubscriber + '\'' +
       ", channelId='" + channelId + '\'' +
       ", avatarUrl='" + avatarUrl + '\'' +
+      ", recalledMessageId=" + recalledMessageId +
       '}';
+  }
+
+  public boolean isReacall() {
+    return recalledMessageId > 0;
   }
 
   public int getMessageId() {
@@ -110,5 +117,13 @@ public class NotificationDTO {
 
   public void setAvatarUrl(String avatarUrl) {
     this.avatarUrl = avatarUrl;
+  }
+
+  public int getRecalledMessageId() {
+    return recalledMessageId;
+  }
+
+  public void setRecalledMessageId(int recalledMessageId) {
+    this.recalledMessageId = recalledMessageId;
   }
 }

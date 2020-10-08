@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
+import org.dadabhagwan.AKonnect.dto.InitAppResponse;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,8 +23,9 @@ public class AlarmReceiver extends BroadcastReceiver implements AsyncResponseLis
     Log.d(TAG, "Inside AlarmReceiver.onReceive ");
     boolean AlarmActiveFlag = true;
     try {
-      SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
-      AlarmActiveFlag = sharedPreferencesTask.getBoolean(SharedPrefConstants.ALARM_ACTIVE_FLAG);
+      InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      Log.d(TAG, "################# initAppResponse:" + initAppResponse);
+      AlarmActiveFlag = initAppResponse.isAlarmActiveFlag();
       if (ApplicationUtility.isOnline(context) && AlarmActiveFlag) {
         fetchMsgFromServer(context);
       }
@@ -37,11 +39,11 @@ public class AlarmReceiver extends BroadcastReceiver implements AsyncResponseLis
     Log.d(TAG, "Inside AlarmReceiver.fetchMsgFromServer ");
     try {
       long currentTimestamp = ApplicationUtility.getCurrentTimestamp();
+      InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
       long lastSeenTimestamp = sharedPreferencesTask.getLong(SharedPrefConstants.LAST_SEEN_TIMESTAMP);
-      int repeatAlramTimeInMin = sharedPreferencesTask.getInt(SharedPrefConstants.REPEAT_ALARM_TIME_IN_MINUTES);
-
-      if ((currentTimestamp - lastSeenTimestamp) > repeatAlramTimeInMin * 60 * 1000) {
+      int repeatAlarmTimeInMin = initAppResponse.getRepeatAlarmTimeInMinutes();
+      if ((currentTimestamp - lastSeenTimestamp) > repeatAlarmTimeInMin * 60 * 1000) {
         WebServiceCall.fetchMsgFromServer(context, this);
       } else {
         Log.d(TAG, "Inside Else condition fetchMsgFromServer, where Device Last seen on " + new java.util.Date(lastSeenTimestamp));
