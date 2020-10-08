@@ -95,7 +95,6 @@ public class AKonnectNotificationManager {
       }
 
       if (!isMsgIdExist) {
-        System.out.println(TAG + "\tNotificationDTO" + nDTO);
         Log.d(TAG, "NotificationDTO" + nDTO);
         if (nDTO.getChannelId() != null && nameByChannelId.get(nDTO.getChannelId()) == null) {
           nameByChannelId.put(nDTO.getChannelId(), nDTO.getChannelName());
@@ -652,12 +651,19 @@ public class AKonnectNotificationManager {
       NotificationCompat.InboxStyle inbox = new NotificationCompat.InboxStyle();
       int lineCount = 0;
       Set<String> uniqueGroupName = new HashSet<String>();
+      String messageId = "";
       // step through all the active StatusBarNotifications and
       for (StatusBarNotification sbn : activeNotifications) {
+        String currMsgId = sbn.getNotification().extras.getString(MESSAGE_ID);
+        messageId += sbn.getNotification().extras.getString(MESSAGE_ID);
+        Log.d(TAG, "currMsgId: $currMsgId , messagaeId: $messagaeId");
+        //Load lines for Notification (If Inbox add all, else get one line)
         String template = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEMPLATE);
         if (template.equalsIgnoreCase("android.app.Notification$InboxStyle")) {
           CharSequence[] charSequences = (CharSequence[]) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEXT_LINES);
-
+          if(nDTO.isReacall()) {
+            charSequences = getTitlesAfterRecallUpdate(charSequences, currMsgId);
+          }
           for (CharSequence line : charSequences) {
             inbox.addLine(line);
             String[] contents = String.valueOf(line).split(":");
@@ -670,6 +676,12 @@ public class AKonnectNotificationManager {
           String title = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TITLE);
           uniqueGroupName.add(title);
           String stackNotificationLine = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEXT);
+          if(nDTO.isReacall()) {
+            if(currMsgId != null && currMsgId.equalsIgnoreCase(String.valueOf(nDTO.getRecalledMessageId()))) {
+              if(stackNotificationLine != null && isAnyEqualTo(stackNotificationLine))
+                stackNotificationLine = RECALL_MSG;
+            }
+          }
           if (stackNotificationLine != null) {
             inbox.addLine(title + ": " + stackNotificationLine);
             lineCount++;
@@ -692,7 +704,7 @@ public class AKonnectNotificationManager {
         .setStyle(inbox)
         //.setNumber(lineCount)
         .setContentIntent(getMainActivityPendingIntent(context));
-      setDefaultNotificationProperty(builder, true , "-1");
+      setDefaultNotificationProperty(builder, true , messageId);
       Notification stackNotification = builder.build();
       notificationManager.notify(getAppName(context), AKONNECT_NOT_ID, stackNotification);
     }
