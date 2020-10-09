@@ -368,11 +368,11 @@ public class AKonnectNotificationManager {
       int totalGroup = entrySet.size();
       for (Map.Entry<String, List<StatusBarNotification>> entry : entrySet) {
         String category = entry.getKey();
-        List<StatusBarNotification> activeNotifications = entry.getValue();
+        List<StatusBarNotification> notifications = entry.getValue();
         List<String> lines = new ArrayList();
         String messageId = "";
         boolean notifyInbox = true;
-        for (StatusBarNotification sbn : activeNotifications) {
+        for (StatusBarNotification sbn : notifications) {
           String currMsgId = sbn.getNotification().extras.getString(MESSAGE_ID);
           List<String> currMsgIdList = new ArrayList<>(Arrays.asList(currMsgId.split(",")));
           Log.d(TAG, "currMsgId: " + currMsgId + ", messagaeId: " + messageId);
