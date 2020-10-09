@@ -34,10 +34,10 @@ public class AlarmSetupReceiver extends BroadcastReceiver {
     try {
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
       InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      Log.d(TAG, "initAppResponse: " + initAppResponse);
       if (initAppResponse != null) {
         alarmActiveFlag = initAppResponse.isAlarmActiveFlag();
         long currentTimestamp = ApplicationUtility.getCurrentTimestamp();
-        Log.d(TAG, "initAppResponse: " + initAppResponse);
         if (alarmActiveFlag) {
           int alarmInterval = initAppResponse.getRepeatAlarmTimeInMinutes();
           int offsetInterval = initAppResponse.getAlarmOffsetWindowInMinutes();
