@@ -3,18 +3,11 @@ package org.dadabhagwan.AKonnect;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Map;
-
-import org.dadabhagwan.AKonnect.AsyncResponseListner;
 
 /**
  * Created by coder2 on 07-Mar-2018.
@@ -22,27 +15,27 @@ import org.dadabhagwan.AKonnect.AsyncResponseListner;
 
 
 //We kept output as STRING instead of JSONObject, since we are using same Class for Other methods
-public class HttpPostAsyncTask extends AsyncTask<String, Void, JSONObject> {
+public class HttpPostAsyncTask extends AsyncTask<String, Void, String> {
   protected static final String TAG = "AKonnect[AsyncTask]";
   public AsyncResponseListner delegate = null;
 
   // This is the JSON body of the post
-  JSONObject postData;
+  String postData;
 
   String ApiKey = "";
   // This is a constructor that allows you to pass in the JSON body
 
-  public HttpPostAsyncTask(Map<String, String> postData, String apikey, AsyncResponseListner delegate) {
+  public HttpPostAsyncTask(String postData, String apikey, AsyncResponseListner delegate) {
     if (delegate != null) {
-      this.postData = new JSONObject(postData);
+      this.postData = postData;
       this.ApiKey = apikey;
       this.delegate = delegate;
     }
   }
 
-  public HttpPostAsyncTask(Map<String, String> postData, String apikey) {
+  public HttpPostAsyncTask(String postData, String apikey) {
     if (postData != null) {
-      this.postData = new JSONObject(postData);
+      this.postData = postData;
       this.ApiKey = apikey;
     }
   }
@@ -50,12 +43,12 @@ public class HttpPostAsyncTask extends AsyncTask<String, Void, JSONObject> {
   // This is a function that we are overriding from AsyncTask.
   // It takes Strings as parameters because that is what we defined for the parameters of our async task
   @Override
-  protected JSONObject doInBackground(String... params) {
+  protected String doInBackground(String... params) {
     String response = null;
-    JSONObject resJson = new JSONObject();
     try {
       // This is getting the url from the string we passed in
       URL url = new URL(params[0]);
+      Log.d(TAG, "Post URL: " + params[0] + "\tdata:" + postData);
       // Create the urlConnection
       HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
       urlConnection.setDoInput(true);
@@ -87,11 +80,8 @@ public class HttpPostAsyncTask extends AsyncTask<String, Void, JSONObject> {
           }
           br.close();
           response = sb.toString();
-          resJson = new JSONObject(response);
+
           Log.d(TAG, "Success response----------------->" + response);
-          Log.d(TAG, "Success resJson----------------->" + resJson);
-          Log.d(TAG, "Success resJson.getJSONArray.length----------------->" + resJson.getJSONArray("result").length());
-          Log.d(TAG, "Success resJson.toString()----------------->" + resJson.toString());
         } catch (Exception e) {
           Log.d(TAG, "Exception inside if  ------------------------>" + e.getMessage());
           e.printStackTrace();
@@ -103,11 +93,12 @@ public class HttpPostAsyncTask extends AsyncTask<String, Void, JSONObject> {
       Log.d(TAG, "Exception ------------------------>" + e.getMessage());
       e.printStackTrace();
     }
-    return resJson;
+    return response;
   }
 
   @Override
-  protected void onPostExecute(JSONObject result) {
+  protected void onPostExecute(String result) {
+    Log.d(TAG, "Response: " + result);
     if (delegate != null)
       delegate.onPostExecute(result);
   }

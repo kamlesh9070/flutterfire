@@ -83,6 +83,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     super.onCreate();
 
     backgroundContext = getApplicationContext();
+
     FlutterMain.ensureInitializationComplete(backgroundContext, null);
 
     // If background isolate is not running start it.
@@ -167,8 +168,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
       NotificationDTO nDTO = gson.fromJson(jsonElement, NotificationDTO.class);
       Log.d(TAG, "nDTO:" + nDTO);
       int notId = 0;
-      setTitle(nDTO);
-      if (!ApplicationUtility.isStrNullOrEmpty(nDTO.getNotificationTitle())) {
+      if (!ApplicationUtility.isStrNullOrEmpty(nDTO.getNotificationTitle(backgroundContext))) {
         Log.v(TAG, "FCM AKonnectNotificationManager.sendStackNotification " + nDTO.toString());
         new AKonnectNotificationManager(this, nDTO).sendStackNotification("2");
       }
@@ -346,37 +346,6 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
   }
 
 
-  private void setTitle(NotificationDTO nData) {
-    String title = null;
-    UserProfile userProfile = SharedPreferencesTask.getUserProfile(backgroundContext);
-    Log.d(TAG, "$$$$$$ msgLag:" + userProfile);
-    if (userProfile != null) {
-      MessageLanguage mLang = MessageLanguage.fromString(userProfile.getPrefMsgLang());
-      Log.d(TAG, "$$$$$$ mLang:" + mLang);
-      if (mLang != null) {
-        switch (mLang) {
-          case ENGLISH:
-            title = nData.getEngTitle();
-            break;
-          case GUJARATI:
-            title = nData.getGujTitle();
-            break;
-          case HINDI:
-            title = nData.getHindiTitle();
-            break;
-        }
-      }
-    }
-    if (ApplicationUtility.isStrNullOrEmpty(title)) {
-      title = nData.getEngTitle();
-      if (ApplicationUtility.isStrNullOrEmpty(title))
-        title = nData.getGujTitle();
-      if (ApplicationUtility.isStrNullOrEmpty(title))
-        title = nData.getHindiTitle();
-    }
-    Log.d(TAG, "$$$$$$ title:" + title);
-    nData.setNotificationTitle(title);
-  }
 
   /**
    * Set the registrant callback. This is called by the app's Application class if background

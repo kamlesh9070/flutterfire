@@ -1,9 +1,17 @@
 package org.dadabhagwan.AKonnect.dto;
 
+import android.content.Context;
+import android.util.Log;
+
 import com.google.gson.annotations.SerializedName;
+
+import org.dadabhagwan.AKonnect.ApplicationUtility;
+import org.dadabhagwan.AKonnect.SharedPreferencesTask;
+import org.dadabhagwan.AKonnect.constants.MessageLanguage;
 
 public class NotificationDTO {
 
+  protected static final String TAG = "NotificationDTO";
   String notificationTitle;
 
   @SerializedName("guj_title")
@@ -63,7 +71,9 @@ public class NotificationDTO {
     this.channelName = channelName;
   }
 
-  public String getNotificationTitle() {
+  public String getNotificationTitle(Context context) {
+    if(ApplicationUtility.isStrNullOrEmpty(notificationTitle))
+      setTitle(context);
     return notificationTitle;
   }
 
@@ -125,5 +135,37 @@ public class NotificationDTO {
 
   public void setRecalledMessageId(int recalledMessageId) {
     this.recalledMessageId = recalledMessageId;
+  }
+
+  private void setTitle(Context context) {
+    String title = null;
+    UserProfile userProfile = SharedPreferencesTask.getUserProfile(context);
+    Log.d(TAG, "$$$$$$ msgLag:" + userProfile);
+    if (userProfile != null) {
+      MessageLanguage mLang = MessageLanguage.fromString(userProfile.getPrefMsgLang());
+      Log.d(TAG, "$$$$$$ mLang:" + mLang);
+      if (mLang != null) {
+        switch (mLang) {
+          case ENGLISH:
+            title = getEngTitle();
+            break;
+          case GUJARATI:
+            title = getGujTitle();
+            break;
+          case HINDI:
+            title = getHindiTitle();
+            break;
+        }
+      }
+    }
+    if (ApplicationUtility.isStrNullOrEmpty(title)) {
+      title = getEngTitle();
+      if (ApplicationUtility.isStrNullOrEmpty(title))
+        title = getGujTitle();
+      if (ApplicationUtility.isStrNullOrEmpty(title))
+        title = getHindiTitle();
+    }
+    Log.d(TAG, "$$$$$$ title:" + title);
+    setNotificationTitle(title);
   }
 }

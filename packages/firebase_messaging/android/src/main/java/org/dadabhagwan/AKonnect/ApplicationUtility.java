@@ -19,8 +19,9 @@ import android.view.ViewGroup;
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.dto.ChannelDetails;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.dadabhagwan.AKonnect.dto.NotificationPullRes;
+import org.dadabhagwan.AKonnect.dto.ServerResponseDTO;
+import org.dadabhagwan.AKonnect.utils.WSUtils;
 
 import java.util.List;
 
@@ -199,18 +200,29 @@ public class ApplicationUtility {
     return connected;
   }
 
-  public static boolean generateNotificationsForFetchMessages(Context context, JSONArray resultArray) {
+  public static void handlePullNotificationRes(Context context, String response) {
+    try {
+      Log.d(TAG, "handlePullNotificationRes response:" + response);
+      ServerResponseDTO<NotificationPullRes> serverResponseDTO = WSUtils.getResponse(response, NotificationPullRes.class);
+      if (serverResponseDTO != null && serverResponseDTO.isSuccess()) {
+        NotificationPullRes notificationPullRes = serverResponseDTO.getData();
+        Log.d(TAG, "handlePullNotificationRes notificationPullRes:" + notificationPullRes);
+        if (notificationPullRes != null && notificationPullRes.isProcessFlag()) {
+          List<NotificationDTO> notificationDTOs = notificationPullRes.getNotificationDTOList();
+          if (notificationDTOs != null && !notificationDTOs.isEmpty())
+            ApplicationUtility.generateNotificationsForFetchMessages(context, serverResponseDTO.getData().getNotificationDTOList());
+        }
+      }
+    } catch (Exception e) {
+      Log.e(TAG, "processFinish output Exception:: " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
+  public static boolean generateNotificationsForFetchMessages(Context context, List<NotificationDTO> notificationDTOList) {
     boolean isSucceeded = true;
     try {
-      for (int i = 0; i < resultArray.length(); i++) {
-        JSONObject jsonObject = resultArray.getJSONObject(i);
-
-        NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setMessageId(jsonObject.getInt("MsgId"));
-        notificationDTO.setChannelName(jsonObject.getString("Title"));
-        notificationDTO.setNotificationTitle(jsonObject.getString("MsgText"));
-        notificationDTO.setChannelId(jsonObject.getString("SenderAliasId") == null ? jsonObject.getString("Title") : jsonObject.getString("SenderAliasId"));
-        Log.d(TAG, " generateNotificationsForFetchMessages  notificationDTO" + notificationDTO.toString());
+      for (NotificationDTO notificationDTO : notificationDTOList) {
         new AKonnectNotificationManager(context, notificationDTO).sendStackNotification("3"); // 3 - Notifications fetched from server
       }
     } catch (Exception e) {

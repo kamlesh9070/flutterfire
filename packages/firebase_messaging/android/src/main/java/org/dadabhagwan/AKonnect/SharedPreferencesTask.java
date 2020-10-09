@@ -12,6 +12,7 @@ import org.dadabhagwan.AKonnect.dto.ChannelDetails;
 import org.dadabhagwan.AKonnect.dto.DeviceDetail;
 import org.dadabhagwan.AKonnect.dto.InitAppResponse;
 import org.dadabhagwan.AKonnect.dto.UserProfile;
+import org.dadabhagwan.AKonnect.dto.UserRegData;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class SharedPreferencesTask {
   private static UserProfile userProfile;
   private static DeviceDetail deviceDetail;
   private static InitAppResponse initAppResponse;
+  private static UserRegData userRegData;
   public static SharedPreferencesTask getSharedPreferenceTask(Context context, String sharedPrefFileName) {
     SharedPreferencesTask sTask = sharedPreferencesTaskMap.get(sharedPrefFileName);
     if (sTask == null) {
@@ -178,6 +180,10 @@ public class SharedPreferencesTask {
     return getDTO(context, SharedPrefConstants.FLUTTER_DEVICEDETAILS, deviceDetail, DeviceDetail.class);
   }
 
+  public static UserRegData getUserRegData(Context context) {
+    return getDTO(context, SharedPrefConstants.FLUTTER_USERREGDATA, userRegData, UserRegData.class);
+  }
+
   public static <T> T getDTO(Context context, String prefName, T dto, Class<T> tClass) {
     try {
       if (dto == null) {
@@ -204,4 +210,19 @@ public class SharedPreferencesTask {
     String jsonStr = new Gson().toJson(dto);
     sharedPreferencesTask.saveString(prefName, jsonStr);
   }
+
+  public static String getProfileHash(Context context) {
+    return getFlutterSharedPrefString(context, SharedPrefConstants.FLUTTER_PROFILEHASH);
+  }
+
+  public static String getToken(Context context) {
+    return getFlutterSharedPrefString(context, SharedPrefConstants.FLUTTER_TOKEN);
+  }
+
+  public static String getFlutterSharedPrefString(Context context, String prefName) {
+    SharedPreferencesTask sharedPreferencesTask = SharedPreferencesTask.getSharedPreferenceTask(context, SharedPrefConstants.FILE_NAME_APP_MAIN_PREF);
+    return sharedPreferencesTask.getString(prefName);
+  }
+
+
 }

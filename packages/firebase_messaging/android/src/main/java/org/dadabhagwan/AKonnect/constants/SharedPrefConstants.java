@@ -7,8 +7,6 @@ package org.dadabhagwan.AKonnect.constants;
 public interface SharedPrefConstants {
 
 
-  String pullUrl = "http://fastest.dbf.ooo/api/pull_notifications/";
-
   String FILE_NAME_NOTIFICATION_LOG_PREF = "NotificationLog";
   String LATEST_MESSAGES_BY_MSGID_APIURL = "LatestMessagesByMsgIdApiUrl";  //Not Get
   String API_URL = "ApiUrl"; //Not Get
@@ -35,6 +33,10 @@ public interface SharedPrefConstants {
   String FLUTTER_USERPROFILE = "flutter.UserProfile";
   String FLUTTER_DEVICEDETAILS = "flutter.DeviceDetails";
   String FLUTTER_INITAPPRESPONSE = "flutter.InitAppResponse";
+  String FLUTTER_USERREGDATA = "flutter.UserRegData";
+  String FLUTTER_PROFILEHASH = "flutter.ProfileHash";
+  String FLUTTER_TOKEN = "flutter.Token";
+
 
   String PREF_CHANNEL_IMAGE = "ChannelImage";
   String FILE_NAME_SENDER_ALIAS_MASTER_PREF = "SenderAliasMaster";

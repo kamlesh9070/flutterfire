@@ -21,6 +21,7 @@ import android.service.notification.StatusBarNotification;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+
 import android.util.Log;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
@@ -36,8 +37,6 @@ import java.util.Set;
 //import me.pushy.sdk.PushReceiver;
 
 import org.dadabhagwan.AKonnect.dbo.DBHelper;
-
-
 
 
 /**
@@ -85,7 +84,7 @@ public class AKonnectNotificationManager {
       //boolean isDeviceManufacturerSupported = ApplicationUtility.isDeviceManufacturerSupported(context);
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
       SharedPreferencesTask nameByChannelIdPref = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_SENDER_ALIAS_MASTER_PREF);
-      if(SharedPreferencesTask.getInitAppResponse(context) != null)
+      if (SharedPreferencesTask.getInitAppResponse(context) != null)
         AlarmActiveFlag = SharedPreferencesTask.getInitAppResponse(context).isAlarmActiveFlag();
       long currentTimestamp = ApplicationUtility.getCurrentTimestamp();
 
@@ -93,7 +92,8 @@ public class AKonnectNotificationManager {
         dbHelper = DBHelper.getInstance(context);
         isMsgIdExist = dbHelper.getNotificationLogByMsgId(nDTO.getMessageId());
       }
-
+      //Temp
+      //if(true) {
       if (!isMsgIdExist) {
         Log.d(TAG, "NotificationDTO" + nDTO);
         if (nDTO.getChannelId() != null && nameByChannelId.get(nDTO.getChannelId()) == null) {
@@ -110,8 +110,8 @@ public class AKonnectNotificationManager {
           StatusBarNotification[] activeNotifications = notificationManager.getActiveNotifications();
           if (activeNotifications.length > 0) {
             // Wait until notification with sound is notified
-            if(nDTO.isReacall()) {
-              if(!isRecallMessageExist(activeNotifications))
+            if (nDTO.isReacall()) {
+              if (!isRecallMessageExist(activeNotifications))
                 return;
             }
             try {
@@ -119,12 +119,19 @@ public class AKonnectNotificationManager {
             } catch (Exception e) {
             }
             NotificationManagerCompat.from(context).cancelAll();
+
+            //If Single Notification and recall come of that
+            if (nDTO.isReacall() && activeNotifications.length == 1) {
+              if (!isInbox(activeNotifications[0]))
+                return;
+            }
+
             if (Build.VERSION.SDK_INT == 23)
               sendNotificationFor23API(activeNotifications);
             else
               sendNotificationAbove23API(activeNotifications);
           } else {
-            if(!nDTO.isReacall()) {
+            if (!nDTO.isReacall()) {
               if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 sendNotificationAbove26API(context, nDTO);
               } else {
@@ -133,7 +140,7 @@ public class AKonnectNotificationManager {
             }
           }
         } else {
-          if(nDTO.isReacall())
+          if (nDTO.isReacall())
             notificationManager.cancel(nDTO.getRecalledMessageId());
           else
             notifyBasicNotification(context, nDTO);
@@ -171,7 +178,7 @@ public class AKonnectNotificationManager {
       String sbnMsgIds = getMessageId(sbn.getNotification().extras);
       if (!ApplicationUtility.isStrNullOrEmpty(sbnMsgIds)) {
         List<String> msgIdList = Arrays.asList(sbnMsgIds.split(","));
-        if (msgIdList.contains(""+nDTO.getRecalledMessageId()))
+        if (msgIdList.contains("" + nDTO.getRecalledMessageId()))
           return true;
       }
     }
@@ -179,7 +186,7 @@ public class AKonnectNotificationManager {
   }
 
   private String getMessageId(Bundle bundle) {
-    if(bundle != null)
+    if (bundle != null)
       return bundle.getString(MESSAGE_ID);
     return "";
   }
@@ -188,15 +195,15 @@ public class AKonnectNotificationManager {
     NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
       .setContentTitle(notificationDTO.getChannelName())
       .setTicker(notificationDTO.getChannelName())
-      .setContentText(notificationDTO.getNotificationTitle())
+      .setContentText(notificationDTO.getNotificationTitle(context))
       .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
-      .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationDTO.getNotificationTitle()))
+      .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationDTO.getNotificationTitle(context)))
       .setContentIntent(getMainActivityPendingIntent(context))
       .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getChannelId(), context))
       //.setNumber(1)
       .setDefaults(Notification.DEFAULT_VIBRATE)// For single Notifications vibration will be there, for grouped Notifications vibrations is removed
       ;
-    setDefaultNotificationProperty(builder, true, ""+notificationDTO.getMessageId());
+    setDefaultNotificationProperty(builder, true, "" + notificationDTO.getMessageId());
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
       builder.setCategory(notificationDTO.getChannelId());
     }
@@ -205,7 +212,7 @@ public class AKonnectNotificationManager {
   }
 
   private void setDefaultNotificationProperty(NotificationCompat.Builder builder, boolean withSound, String messageId) {
-    if(nDTO.isReacall())
+    if (nDTO.isReacall())
       withSound = false;
     builder.setDefaults(Notification.DEFAULT_LIGHTS)
       //.setDefaults(Notification.DEFAULT_VIBRATE) // Removed to avoid continue vibration for multiple Notifications
@@ -213,9 +220,9 @@ public class AKonnectNotificationManager {
       .setWhen(System.currentTimeMillis())
       .setAutoCancel(true);
 
-    if(!ApplicationUtility.isStrNullOrEmpty(messageId)) {
+    if (!ApplicationUtility.isStrNullOrEmpty(messageId)) {
       Bundle bundle = builder.getExtras();
-      if(bundle == null)
+      if (bundle == null)
         bundle = new Bundle();
       bundle.putString(MESSAGE_ID, messageId);
     }
@@ -241,7 +248,7 @@ public class AKonnectNotificationManager {
   }
 
   private NotificationChannel getNotificationChannel(NotificationDTO notificationDTO, boolean withSound) {
-    if(nDTO.isReacall())
+    if (nDTO.isReacall())
       withSound = false;
     NotificationChannel notificationChannel = null;
     NotificationManager notificationManager = null;
@@ -361,19 +368,18 @@ public class AKonnectNotificationManager {
       int totalGroup = entrySet.size();
       for (Map.Entry<String, List<StatusBarNotification>> entry : entrySet) {
         String category = entry.getKey();
-        List<StatusBarNotification> notifications = entry.getValue();
+        List<StatusBarNotification> activeNotifications = entry.getValue();
         List<String> lines = new ArrayList();
         String messageId = "";
-        for (StatusBarNotification activeSbn : notifications) {
-          String currMsgId = activeSbn.getNotification().extras.getString(MESSAGE_ID);
-          messageId += activeSbn.getNotification().extras.getString(MESSAGE_ID);
-          Log.d(TAG, "currMsgId: $currMsgId , messagaeId: $messagaeId");
-          //Load lines for Notification (If Inbox add all, else get one line)
-          String template = (String) activeSbn.getNotification().extras.get(NotificationCompat.EXTRA_TEMPLATE);
-          if (template != null && template.equalsIgnoreCase("android.app.Notification$InboxStyle")) {
-            CharSequence[] charSequences = (CharSequence[]) activeSbn.getNotification().extras.get(NotificationCompat.EXTRA_TEXT_LINES);
-            if(nDTO.isReacall() && category.equalsIgnoreCase(nDTO.getChannelId())) {
-              charSequences = getTitlesAfterRecallUpdate(charSequences, currMsgId);
+        boolean notifyInbox = true;
+        for (StatusBarNotification sbn : activeNotifications) {
+          String currMsgId = sbn.getNotification().extras.getString(MESSAGE_ID);
+          List<String> currMsgIdList = new ArrayList<>(Arrays.asList(currMsgId.split(",")));
+          Log.d(TAG, "currMsgId: " + currMsgId + ", messagaeId: " + messageId);
+          if (isInbox(sbn)) {
+            CharSequence[] charSequences = (CharSequence[]) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEXT_LINES);
+            if (nDTO.isReacall() && category.equalsIgnoreCase(nDTO.getChannelId())) {
+              charSequences = getTitlesAfterRecallUpdate(charSequences, currMsgIdList);
             }
             //String inboxtTitle = (String) activeSbn.getNotification().extras.get(NotificationCompat.EXTRA_TITLE);
             for (CharSequence line : charSequences) {
@@ -381,43 +387,49 @@ public class AKonnectNotificationManager {
             }
             Log.d(TAG, "Lines :$lines");
           } else {
-            String stackNotificationLine = (String) activeSbn.getNotification().extras.get(NotificationCompat.EXTRA_TEXT);
-            if(nDTO.isReacall() && category.equalsIgnoreCase(nDTO.getChannelId())) {
-              if(currMsgId != null && currMsgId.equalsIgnoreCase(String.valueOf(nDTO.getRecalledMessageId()))) {
-                if(stackNotificationLine != null && isAnyEqualTo(stackNotificationLine))
-                  stackNotificationLine = RECALL_MSG;
+            String stackNotificationLine = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEXT);
+            if (nDTO.isReacall() && category.equalsIgnoreCase(nDTO.getChannelId())) {
+              if (currMsgId != null && currMsgId.equalsIgnoreCase(String.valueOf(nDTO.getRecalledMessageId()))) {
+                if (stackNotificationLine != null && isAnyEqualTo(stackNotificationLine))
+                  notifyInbox = false;
+                //stackNotificationLine = RECALL_MSG;
               }
             }
             if (stackNotificationLine != null) {
               lines.add(stackNotificationLine);
             }
           }
+          messageId += listToCommaSeparatedString(currMsgIdList);
         }
 
         //Add New Notification to Stack
-        if(!nDTO.isReacall()) {
+        if (!nDTO.isReacall()) {
           if (category.equalsIgnoreCase(nDTO.getChannelId())) {
-            if(!messageId.equals(""))
+            if (!messageId.equals(""))
               messageId = messageId + "," + nDTO.getMessageId();
             else
-              messageId = ""+ nDTO.getMessageId();
-            lines.add(nDTO.getNotificationTitle());
+              messageId = "" + nDTO.getMessageId();
+            lines.add(nDTO.getNotificationTitle(context));
             isNotificationAdded = true;
           }
         }
 
         //Notify Inbox Notification
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-          notifyInboxNotificatonAbove26(category, lines, k++, grpMsg, messageId);
-        } else {
-          notifyInboxNotificaton(category, lines, k++, grpMsg);
-        }
-        totalMessages = totalMessages + lines.size();
+        if (notifyInbox && !lines.isEmpty()) {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notifyInboxNotificatonAbove26(category, lines, k++, grpMsg, messageId);
+          } else {
+            notifyInboxNotificaton(category, lines, k++, grpMsg);
+          }
+          totalMessages = totalMessages + lines.size();
+        } else
+          totalGroup--;
       }
       if (!nDTO.isReacall() && !isNotificationAdded) {
         String channelId = nDTO.getChannelId();
         List<String> lines = new ArrayList(1);
-        lines.add(nDTO.getNotificationTitle());
+        lines.add(nDTO.
+          getNotificationTitle(context));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
           notifyInboxNotificatonAbove26(channelId, lines, k++, grpMsg, "" + nDTO.getMessageId());
         } else {
@@ -426,82 +438,97 @@ public class AKonnectNotificationManager {
         totalMessages++;
         totalGroup++;
       }
+      if (totalMessages > 0) {
+        String totalMsg = new StringBuilder(String.valueOf(totalMessages))
+          .append(" messages from ")
+          .append(totalGroup)
+          .append(" groups")
+          .toString();
+        //Notification.Builder groupBuilder;
 
-      String totalMsg = new StringBuilder(String.valueOf(totalMessages))
-        .append(" messages from ")
-        .append(totalGroup)
-        .append(" groups")
-        .toString();
-      //Notification.Builder groupBuilder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+          Notification.Builder groupBuilder;
+          NotificationChannel notificationChannel = getNotificationChannel(nDTO, true);
+          groupBuilder = new Notification.Builder(context, notificationChannel.getId());
 
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        Notification.Builder groupBuilder;
-        NotificationChannel notificationChannel = getNotificationChannel(nDTO, true);
-        groupBuilder = new Notification.Builder(context, notificationChannel.getId());
+          Notification.InboxStyle inbox = new Notification.InboxStyle();
+          inbox.setSummaryText(totalMsg);
+          inbox.addLine(grpMsg);
 
-        Notification.InboxStyle inbox = new Notification.InboxStyle();
-        inbox.setSummaryText(totalMsg);
-        inbox.addLine(grpMsg);
+          groupBuilder.setContentTitle("AKonnect")
+            .setContentText(grpMsg)
+            .setGroupSummary(true)
+            .setGroup(group)
+            .setCategory(group)
+            .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+            .setLargeIcon(ApplicationUtility.getSenderImage(nDTO.getChannelId(), context))
+            .setStyle(inbox)
+            .setContentIntent(getMainActivityPendingIntent(context))
+            .setShowWhen(true)
+            .setWhen(System.currentTimeMillis())
+            .setColor(color)
+            //.setNumber(totalMessages)
+            .setAutoCancel(true)
+          ;
+          //setDefaultNotificationPropertyAbove26(groupBuilder,true,notificationChannel);
+          notificationManager.createNotificationChannel(notificationChannel);
 
-        groupBuilder.setContentTitle("AKonnect")
-          .setContentText(grpMsg)
-          .setGroupSummary(true)
-          .setGroup(group)
-          .setCategory(group)
-          .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
-          .setLargeIcon(ApplicationUtility.getSenderImage(nDTO.getChannelId(), context))
-          .setStyle(inbox)
-          .setContentIntent(getMainActivityPendingIntent(context))
-          .setShowWhen(true)
-          .setWhen(System.currentTimeMillis())
-          .setColor(color)
+          notificationManager.notify(AKONNECT_GROUP_ID, groupBuilder.build());
+
+          Log.d(TAG, "sendNotificationAbove23API  mChannel --> " + notificationChannel.toString() + "\n groupBuilder --> " + groupBuilder.toString());
+        } else {
+          NotificationCompat.Builder groupBuilder;
+          groupBuilder = new NotificationCompat.Builder(context);
+          NotificationCompat.InboxStyle inbox = new NotificationCompat.InboxStyle();
+          inbox.setSummaryText(totalMsg);
+          inbox.addLine(grpMsg);
+
+          groupBuilder.setContentTitle("AKonnect")
+            .setContentText(grpMsg)
+            .setGroupSummary(true)
+            .setGroup(group)
+            .setCategory(group)
+            .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+            .setLargeIcon(ApplicationUtility.getSenderImage(nDTO.getChannelId(), context))
+            .setStyle(inbox)
+            .setContentIntent(getMainActivityPendingIntent(context))
           //.setNumber(totalMessages)
-          .setAutoCancel(true)
-        ;
-        //setDefaultNotificationPropertyAbove26(groupBuilder,true,notificationChannel);
-        notificationManager.createNotificationChannel(notificationChannel);
+          ;
 
-        notificationManager.notify(AKONNECT_GROUP_ID, groupBuilder.build());
-
-        Log.d(TAG, "sendNotificationAbove23API  mChannel --> " + notificationChannel.toString() + "\n groupBuilder --> " + groupBuilder.toString());
-      } else {
-        NotificationCompat.Builder groupBuilder;
-        groupBuilder = new NotificationCompat.Builder(context);
-        NotificationCompat.InboxStyle inbox = new NotificationCompat.InboxStyle();
-        inbox.setSummaryText(totalMsg);
-        inbox.addLine(grpMsg);
-
-        groupBuilder.setContentTitle("AKonnect")
-          .setContentText(grpMsg)
-          .setGroupSummary(true)
-          .setGroup(group)
-          .setCategory(group)
-          .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
-          .setLargeIcon(ApplicationUtility.getSenderImage(nDTO.getChannelId(), context))
-          .setStyle(inbox)
-          .setContentIntent(getMainActivityPendingIntent(context))
-        //.setNumber(totalMessages)
-        ;
-
-        setDefaultNotificationProperty(groupBuilder, true, "-1");
-        notificationManager.notify(AKONNECT_GROUP_ID, groupBuilder.build());
+          setDefaultNotificationProperty(groupBuilder, true, "-1");
+          notificationManager.notify(AKONNECT_GROUP_ID, groupBuilder.build());
+        }
       }
     }
+  }
+
+  private String listToCommaSeparatedString(List<String> strs) {
+    StringBuilder out = new StringBuilder("");
+    for (int i = 0; i < strs.size(); i++) {
+      if (i == 0)
+        out.append(strs.get(i));
+      else
+        out.append(",").append(strs.get(i));
+    }
+    return out.toString();
   }
 
   private boolean isAnyEqualTo(String title) {
     return title.equalsIgnoreCase(nDTO.getEngTitle()) || title.equalsIgnoreCase(nDTO.getGujTitle()) || title.equalsIgnoreCase(nDTO.getHindiTitle());
   }
 
-  private CharSequence[] getTitlesAfterRecallUpdate(CharSequence[] charSequences, String msgIds) {
-    if (!ApplicationUtility.isStrNullOrEmpty(msgIds)) {
-      List<String> msgIdList = Arrays.asList(msgIds.split(","));
+  private CharSequence[] getTitlesAfterRecallUpdate(CharSequence[] charSequences, List<String> msgIdList) {
+    if (msgIdList != null && !msgIdList.isEmpty()) {
       int msgIdIndex = msgIdList.indexOf("" + nDTO.getRecalledMessageId());
       if (msgIdIndex > -1) {
         String msg = charSequences[msgIdIndex].toString();
         if (!ApplicationUtility.isStrNullOrEmpty(msg)) {
           if (isAnyEqualTo(msg)) {
-            charSequences[msgIdIndex] = RECALL_MSG;
+            List<CharSequence> tempList = new ArrayList<>(Arrays.asList(charSequences));
+            tempList.remove(msgIdIndex);
+            msgIdList.remove(msgIdIndex);
+            charSequences = tempList.toArray(new CharSequence[0]);
+            //charSequences[msgIdIndex] = RECALL_MSG;
           }
         }
       }
@@ -510,8 +537,8 @@ public class AKonnectNotificationManager {
   }
 
   private int getMsgIdIndex(CharSequence[] charSequences, String msgId) {
-    for(int i=0; i<charSequences.length; i++) {
-      if(charSequences[i].toString().equalsIgnoreCase(msgId))
+    for (int i = 0; i < charSequences.length; i++) {
+      if (charSequences[i].toString().equalsIgnoreCase(msgId))
         return i;
     }
     return -1;
@@ -655,14 +682,13 @@ public class AKonnectNotificationManager {
       // step through all the active StatusBarNotifications and
       for (StatusBarNotification sbn : activeNotifications) {
         String currMsgId = sbn.getNotification().extras.getString(MESSAGE_ID);
-        messageId += sbn.getNotification().extras.getString(MESSAGE_ID);
-        Log.d(TAG, "currMsgId: $currMsgId , messagaeId: $messagaeId");
+        List<String> currMsgIdList = new ArrayList<>(Arrays.asList(currMsgId.split(",")));
+        Log.d(TAG, "currMsgId:" + currMsgId + ", messagaeId:" + messageId);
         //Load lines for Notification (If Inbox add all, else get one line)
-        String template = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEMPLATE);
-        if (template.equalsIgnoreCase("android.app.Notification$InboxStyle")) {
+        if (isInbox(sbn)) {
           CharSequence[] charSequences = (CharSequence[]) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEXT_LINES);
-          if(nDTO.isReacall()) {
-            charSequences = getTitlesAfterRecallUpdate(charSequences, currMsgId);
+          if (nDTO.isReacall()) {
+            charSequences = getTitlesAfterRecallUpdate(charSequences, currMsgIdList);
           }
           for (CharSequence line : charSequences) {
             inbox.addLine(line);
@@ -676,10 +702,11 @@ public class AKonnectNotificationManager {
           String title = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TITLE);
           uniqueGroupName.add(title);
           String stackNotificationLine = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEXT);
-          if(nDTO.isReacall()) {
-            if(currMsgId != null && currMsgId.equalsIgnoreCase(String.valueOf(nDTO.getRecalledMessageId()))) {
-              if(stackNotificationLine != null && isAnyEqualTo(stackNotificationLine))
-                stackNotificationLine = RECALL_MSG;
+          if (nDTO.isReacall()) {
+            if (currMsgId != null && currMsgId.equalsIgnoreCase(String.valueOf(nDTO.getRecalledMessageId()))) {
+              if (stackNotificationLine != null && isAnyEqualTo(stackNotificationLine))
+                stackNotificationLine = null;
+                //stackNotificationLine = RECALL_MSG;
             }
           }
           if (stackNotificationLine != null) {
@@ -687,27 +714,35 @@ public class AKonnectNotificationManager {
             lineCount++;
           }
         }
+        messageId += listToCommaSeparatedString(currMsgIdList);
       }
-
-      inbox.addLine(nDTO.getChannelName() + ": " + nDTO.getNotificationTitle());
-      uniqueGroupName.add(nDTO.getChannelName());
-      lineCount++;
-
-      inbox.setSummaryText(lineCount + " New Messages from " + uniqueGroupName.size() + " groups");
-      NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-        .setContentTitle(lineCount + " New Messages from " + uniqueGroupName.size() + " groups")
-        .setTicker(lineCount + " Messages from " + uniqueGroupName.size() + " groups")
-        .setContentText(lineCount + " Messages from " + uniqueGroupName.size() + " groups")
-        .setWhen(System.currentTimeMillis())
-        .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
-        .setLargeIcon(ApplicationUtility.getSenderImage(null, context))
-        .setStyle(inbox)
-        //.setNumber(lineCount)
-        .setContentIntent(getMainActivityPendingIntent(context));
-      setDefaultNotificationProperty(builder, true , messageId);
-      Notification stackNotification = builder.build();
-      notificationManager.notify(getAppName(context), AKONNECT_NOT_ID, stackNotification);
+      if(!nDTO.isReacall()) {
+        inbox.addLine(nDTO.getChannelName() + ": " + nDTO.getNotificationTitle(context));
+        uniqueGroupName.add(nDTO.getChannelName());
+        lineCount++;
+      }
+      if(lineCount > 0) {
+        inbox.setSummaryText(lineCount + " New Messages from " + uniqueGroupName.size() + " groups");
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+          .setContentTitle(lineCount + " New Messages from " + uniqueGroupName.size() + " groups")
+          .setTicker(lineCount + " Messages from " + uniqueGroupName.size() + " groups")
+          .setContentText(lineCount + " Messages from " + uniqueGroupName.size() + " groups")
+          .setWhen(System.currentTimeMillis())
+          .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+          .setLargeIcon(ApplicationUtility.getSenderImage(null, context))
+          .setStyle(inbox)
+          //.setNumber(lineCount)
+          .setContentIntent(getMainActivityPendingIntent(context));
+        setDefaultNotificationProperty(builder, true, messageId);
+        Notification stackNotification = builder.build();
+        notificationManager.notify(getAppName(context), AKONNECT_NOT_ID, stackNotification);
+      }
     }
+  }
+
+  boolean isInbox(StatusBarNotification sbn) {
+    String template = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEMPLATE);
+    return template != null && template.equalsIgnoreCase("android.app.Notification$InboxStyle");
   }
 
   void sendNotificationAbove26API(Context context, NotificationDTO notificationDTO) {
@@ -722,15 +757,15 @@ public class AKonnectNotificationManager {
 
       Bundle bundle = builder.getExtras();
       Log.d(TAG, "bundle:" + bundle);
-      if(bundle == null)
+      if (bundle == null)
         bundle = new Bundle();
       bundle.putString(MESSAGE_ID, "" + notificationDTO.getMessageId());
       //NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
       builder.setContentTitle(notificationDTO.getChannelName())
         .setTicker(notificationDTO.getChannelName())
-        .setContentText(notificationDTO.getNotificationTitle())
+        .setContentText(notificationDTO.getNotificationTitle(context))
         .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
-        .setStyle(new Notification.BigTextStyle().bigText(notificationDTO.getNotificationTitle()))
+        .setStyle(new Notification.BigTextStyle().bigText(notificationDTO.getNotificationTitle(context)))
         .setContentIntent(getMainActivityPendingIntent(context))
         .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getChannelId(), context))
         .setWhen(System.currentTimeMillis())
@@ -738,7 +773,7 @@ public class AKonnectNotificationManager {
         .setAutoCancel(true)
         .setCategory(notificationDTO.getChannelId())
         .setShowWhen(true)
-      .setExtras(bundle)
+        .setExtras(bundle)
       //.setNumber(1)
       ;
 

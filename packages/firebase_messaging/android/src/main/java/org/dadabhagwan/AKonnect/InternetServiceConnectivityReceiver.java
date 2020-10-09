@@ -66,19 +66,9 @@ public class InternetServiceConnectivityReceiver extends BroadcastReceiver imple
 
   //Here you will receive the result fired from async class of onPostExecute(result) method.
   @Override
-  public void onPostExecute(JSONObject output) {
+  public void onPostExecute(String output) {
     try {
-      Log.d(TAG, "processFinish output :: " + output);
-      Log.d(TAG, "processFinishoutput.toString() :: " + output.toString());
-      Log.d(TAG, "processFinish output.getJSONArray.length----------------->" + output.getJSONArray("result").length());
-
-      JSONArray resultArray = output.getJSONArray("result");
-      boolean processFlag = output.getBoolean("processFlag");
-      String error = output.getString("error");
-
-      if (processFlag && resultArray.length() > 0) {
-        ApplicationUtility.generateNotificationsForFetchMessages(context, resultArray);
-      }
+      ApplicationUtility.handlePullNotificationRes(context, output);
       AlarmSetupReceiver.setAlarm(context);
     } catch (Exception e) {
       Log.e(TAG, "processFinish output Exception:: " + e.getMessage());

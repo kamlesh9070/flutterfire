@@ -43,7 +43,8 @@ public class InitAppResponse {
   }
 
   public boolean isAlarmActiveFlag() {
-    return alarmActiveFlag;
+    return true;
+    //return alarmActiveFlag;
   }
 
   public void setAlarmActiveFlag(boolean alarmActiveFlag) {
@@ -91,7 +92,8 @@ public class InitAppResponse {
   }
 
   public int getRepeatAlarmTimeInMinutes() {
-    return repeatAlarmTimeInMinutes;
+    return 1;
+    //return repeatAlarmTimeInMinutes;
   }
 
   public void setRepeatAlarmTimeInMinutes(int repeatAlarmTimeInMinutes) {
@@ -99,7 +101,8 @@ public class InitAppResponse {
   }
 
   public int getAlarmOffsetWindowInMinutes() {
-    return alarmOffsetWindowInMinutes;
+    return 1;
+    //return alarmOffsetWindowInMinutes;
   }
 
   public void setAlarmOffsetWindowInMinutes(int alarmOffsetWindowInMinutes) {

@@ -19,7 +19,7 @@ public class AKDBHelper extends SQLiteOpenHelper {
   private static final int DATABASE_VERSION = 1;
 
   // Database Name
-  private static final String DATABASE_NAME = "AkonnectDb";
+  private static final String DATABASE_NAME = "AkonnectDb.db";
 
   private static AKDBHelper mInstance = null;
 
