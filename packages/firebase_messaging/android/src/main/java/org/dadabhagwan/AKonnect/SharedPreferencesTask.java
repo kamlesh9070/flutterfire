@@ -224,5 +224,10 @@ public class SharedPreferencesTask {
     return sharedPreferencesTask.getString(prefName);
   }
 
+  public static void saveFlutterSharedPrefString(Context context, String prefName, String value) {
+    SharedPreferencesTask sharedPreferencesTask = SharedPreferencesTask.getSharedPreferenceTask(context, SharedPrefConstants.FILE_NAME_APP_MAIN_PREF);
+    sharedPreferencesTask.saveString(prefName, value);
+  }
+
 
 }

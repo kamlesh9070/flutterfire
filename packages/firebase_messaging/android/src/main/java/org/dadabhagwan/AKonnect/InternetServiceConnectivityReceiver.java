@@ -30,9 +30,13 @@ public class InternetServiceConnectivityReceiver extends BroadcastReceiver imple
     Log.d(TAG, "Inside InternetServiceConnectivityReceiver.onReceive ");
     boolean AlarmActiveFlag = true;
     try {
-      AlarmActiveFlag = SharedPreferencesTask.getInitAppResponse(context).isAlarmActiveFlag();
-      if (ApplicationUtility.isOnline(context) == true && AlarmActiveFlag) {
-        fetchMsgFromServer(context);
+      InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      Log.d(TAG, "initAppResponse:" + initAppResponse);
+      if(initAppResponse != null) {
+        AlarmActiveFlag = SharedPreferencesTask.getInitAppResponse(context).isAlarmActiveFlag();
+        if (ApplicationUtility.isOnline(context) == true && AlarmActiveFlag) {
+          fetchMsgFromServer(context);
+        }
       }
     } catch (Exception e) {
       Log.e(TAG, "Error inside InternetServiceConnectivityReceiver message." + e.getMessage(), e);

@@ -2,6 +2,8 @@ package org.dadabhagwan.AKonnect.dto;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class UserProfile {
 
   @SerializedName("subscriber")
@@ -11,6 +13,9 @@ public class UserProfile {
   String appLanguage = "English";
   @SerializedName("pref_msg_lang")
   String prefMsgLang = "English";
+
+  @SerializedName("sender")
+  List<Sender> senderChannelList;
 
   public String getAppLanguage() {
     return appLanguage;
@@ -36,12 +41,21 @@ public class UserProfile {
     this.subscriber = subscriber;
   }
 
+  public List<Sender> getSenderChannelList() {
+    return senderChannelList;
+  }
+
+  public void setSenderChannelList(List<Sender> senderChannelList) {
+    this.senderChannelList = senderChannelList;
+  }
+
   @Override
   public String toString() {
     return "UserProfile{" +
       "subscriber='" + subscriber + '\'' +
       ", appLanguage='" + appLanguage + '\'' +
       ", prefMsgLang='" + prefMsgLang + '\'' +
+      ", senderChannelList=" + senderChannelList +
       '}';
   }
 }

@@ -211,6 +211,10 @@ public class ApplicationUtility {
           List<NotificationDTO> notificationDTOs = notificationPullRes.getNotificationDTOList();
           if (notificationDTOs != null && !notificationDTOs.isEmpty())
             ApplicationUtility.generateNotificationsForFetchMessages(context, serverResponseDTO.getData().getNotificationDTOList());
+          if(!isStrNullOrEmpty(notificationPullRes.getProfile_hash()))
+            SharedPreferencesTask.saveFlutterSharedPrefString(context, SharedPrefConstants.FLUTTER_PROFILEHASH, notificationPullRes.getProfile_hash());
+          if(!isStrNullOrEmpty(notificationPullRes.getToken()))
+            SharedPreferencesTask.saveFlutterSharedPrefString(context, SharedPrefConstants.FLUTTER_TOKEN, notificationPullRes.getToken());
         }
       }
     } catch (Exception e) {
@@ -327,6 +331,6 @@ public class ApplicationUtility {
         }*/
 
   public static boolean isStrNullOrEmpty(String str) {
-    return str == null || str.isEmpty();
+    return str == null || str.isEmpty() || str.equalsIgnoreCase("null");
   }
 }

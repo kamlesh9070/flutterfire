@@ -79,7 +79,7 @@ public class AKonnectNotificationManager {
 
   public void sendStackNotification(String pushType) {
     boolean isMsgIdExist = false;
-    boolean AlarmActiveFlag = true;
+    boolean AlarmActiveFlag = false;
     try {
       //boolean isDeviceManufacturerSupported = ApplicationUtility.isDeviceManufacturerSupported(context);
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);

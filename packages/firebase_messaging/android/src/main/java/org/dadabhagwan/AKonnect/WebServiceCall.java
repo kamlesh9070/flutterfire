@@ -84,10 +84,15 @@ public class WebServiceCall {
       //maxMsgId = 24332;
       Log.d(TAG, "lastNotificationId : " + lastNotificationId + ", lastMsgIdFromInbox: " + lastMsgIdFromInbox);
       UserRegData userRegData = SharedPreferencesTask.getUserRegData(context);
+      UserProfile userProfile = SharedPreferencesTask.getUserProfile(context);
       if(maxMsgId > 0 && userRegData != null) {
         pullNotificationDTO.setLastMessageId(maxMsgId);
         pullNotificationDTO.setDevice(userRegData.getDevice());
-        pullNotificationDTO.setIsCoordinator(0);
+        Log.d(TAG, "userProfile:" + userProfile);
+        if(userProfile != null && userProfile.getSenderChannelList() != null && !userProfile.getSenderChannelList().isEmpty())
+          pullNotificationDTO.setIsCoordinator(1);
+        else
+          pullNotificationDTO.setIsCoordinator(0);
         pullNotificationDTO.setProfileHash(SharedPreferencesTask.getProfileHash(context));
         pullNotificationDTO.setToken(SharedPreferencesTask.getToken(context));
         HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(pullNotificationDTO), "", asyncResponseListner);
