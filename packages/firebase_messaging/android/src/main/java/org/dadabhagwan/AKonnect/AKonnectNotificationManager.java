@@ -95,7 +95,7 @@ public class AKonnectNotificationManager {
       //Temp
       //if(true) {
       if (!isMsgIdExist) {
-        Log.d(TAG, "NotificationDTO" + nDTO);
+        Log.d(TAG, "NotificationDTO:" + nDTO);
         if (nDTO.getChannelId() != null && nameByChannelId.get(nDTO.getChannelId()) == null) {
           nameByChannelId.put(nDTO.getChannelId(), nDTO.getChannelName());
         }
