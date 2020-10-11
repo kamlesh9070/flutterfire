@@ -43,14 +43,14 @@ public class WebServiceCall {
   }
 
   public static void sendNotificationLog(Context context, String pushType, String msgId) {
-
-    try {
+    ApplicationUtility.sendLog(context, "Notification:" + pushType);
+/*    try {
       //SharedPreferences sharedPreferences = ApplicationUtility.getAkonnectSharedPreferences(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
       // if (sharedPreferences != null) {
-                /*Map<String, ?> allEntries = sharedPreferences.getAll();
+                *//*Map<String, ?> allEntries = sharedPreferences.getAll();
                 for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
                     Log.d(TAG, "NOTIFICATION_LOG_PREF Shared values" + entry.getKey() + ": " + entry.getValue().toString());
-                }*/
+                }*//*
       //String ApiUrl = sharedPreferences.getString(String.valueOf("ApiUrl"), null);
       String ApiUrl = WSConstant.logUrl;
       int ActivationSrNo = 0;
@@ -58,13 +58,13 @@ public class WebServiceCall {
       NotificationLog notificationLog = new NotificationLog();
       notificationLog.setFieldsFromDTO(SharedPreferencesTask.getUserRegData(context));
       notificationLog.setFieldsFromDTO(SharedPreferencesTask.getDeviceDetail(context));
-
+      //notificationLog.setTimestamp(new Date().getTime());
       HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(notificationLog), null);
       task.execute(ApiUrl);
       //}
     } catch (Exception e) {
       Log.d(TAG, "sendNotificationLog Exception : " + e.getMessage());
-    }
+    }*/
 
   }
 

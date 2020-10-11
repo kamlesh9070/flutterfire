@@ -21,8 +21,10 @@ public class NotificationLog {
   @SerializedName("client_id")
   String clientID;
   @SerializedName("timestamp")
-  String timestamp;
+  long timestamp;
 
+  @SerializedName("date")
+  String time;
 
   public void setFieldsFromDTO(DeviceDetail deviceDetail) {
     if(deviceDetail != null) {
@@ -32,7 +34,7 @@ public class NotificationLog {
       osVersion = deviceDetail.getOsVersion();
       appVersion = deviceDetail.getAppVersion();
       clientID = deviceDetail.getClientId();
-      timestamp = String.valueOf(new Date().getTime());
+      timestamp = new Date().getTime();
     }
   }
 
@@ -97,13 +99,34 @@ public class NotificationLog {
     this.device = device;
   }
 
+  public String getTime() {
+    return time;
+  }
 
+  public void setTime(String time) {
+    this.time = time;
+  }
 
-  public String getTimestamp() {
+  public long getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(String timestamp) {
+  public void setTimestamp(long timestamp) {
     this.timestamp = timestamp;
+  }
+
+  @Override
+  public String toString() {
+    return "NotificationLog{" +
+      "deviceID='" + deviceID + '\'' +
+      ", deviceModel='" + deviceModel + '\'' +
+      ", deviceOS='" + deviceOS + '\'' +
+      ", osVersion='" + osVersion + '\'' +
+      ", appVersion='" + appVersion + '\'' +
+      ", device='" + device + '\'' +
+      ", clientID='" + clientID + '\'' +
+      ", timestamp=" + timestamp +
+      ", time='" + time + '\'' +
+      '}';
   }
 }

@@ -19,17 +19,22 @@ public class AlarmReceiver extends BroadcastReceiver implements AsyncResponseLis
     Log.d(TAG, "Inside AlarmReceiver.onReceive ");
     boolean AlarmActiveFlag = true;
     try {
+      ApplicationUtility.honorDeviceTest(context);
       InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
       Log.d(TAG, "################# initAppResponse:" + initAppResponse);
-      AlarmActiveFlag = initAppResponse.isAlarmActiveFlag();
-      if (ApplicationUtility.isOnline(context) && AlarmActiveFlag) {
-        fetchMsgFromServer(context);
+      if(initAppResponse != null) {
+        AlarmActiveFlag = initAppResponse.isAlarmActiveFlag();
+        if (ApplicationUtility.isOnline(context) && AlarmActiveFlag) {
+          fetchMsgFromServer(context);
+        }
       }
     } catch (Exception e) {
       Log.e(TAG, "Error inside AlarmReceiver.onReceive  message." + e.getMessage(), e);
       e.printStackTrace();
     }
   }
+
+
 
   private void fetchMsgFromServer(Context context) {
     Log.d(TAG, "Inside AlarmReceiver.fetchMsgFromServer ");

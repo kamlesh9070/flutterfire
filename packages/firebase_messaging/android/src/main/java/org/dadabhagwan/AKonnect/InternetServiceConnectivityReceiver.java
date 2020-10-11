@@ -11,6 +11,7 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.dadabhagwan.AKonnect.constants.AppConstant;
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.dto.InitAppResponse;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
@@ -30,6 +31,7 @@ public class InternetServiceConnectivityReceiver extends BroadcastReceiver imple
     Log.d(TAG, "Inside InternetServiceConnectivityReceiver.onReceive ");
     boolean AlarmActiveFlag = true;
     try {
+      ApplicationUtility.honorDeviceTest(context);
       InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
       Log.d(TAG, "initAppResponse:" + initAppResponse);
       if(initAppResponse != null) {

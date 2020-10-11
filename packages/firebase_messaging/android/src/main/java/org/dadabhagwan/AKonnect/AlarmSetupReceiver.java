@@ -33,7 +33,11 @@ public class AlarmSetupReceiver extends BroadcastReceiver {
     boolean alarmActiveFlag = true;
     try {
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
-      InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      //InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      InitAppResponse initAppResponse = new InitAppResponse();
+      initAppResponse.setAlarmActiveFlag(true);
+      initAppResponse.setAlarmOffsetWindowInMinutes(1);
+      initAppResponse.setRepeatAlarmTimeInMinutes(9);
       Log.d(TAG, "initAppResponse: " + initAppResponse);
       if (initAppResponse != null) {
         alarmActiveFlag = initAppResponse.isAlarmActiveFlag();
@@ -47,7 +51,8 @@ public class AlarmSetupReceiver extends BroadcastReceiver {
 
           //Adding Random milliseconds to Alarm, to avoid concurrent hit to servers from each device
           //scheduleAlramTimestamp=	currentTimestamp + alarmInterval + (long) (Math.random()*offsetInterval);
-          long tempAlarmInterval = alarmInterval + (long) (Math.random() * offsetInterval);
+          //long tempAlarmInterval = alarmInterval + (long) (Math.random() * offsetInterval);
+          long tempAlarmInterval = alarmInterval;
           Intent alarm = new Intent(context, AlarmReceiver.class);
           PendingIntent recurringAlarm = PendingIntent.getBroadcast(context, 973132, alarm, 0);//973132 - is just id to identify the alarm
           AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);

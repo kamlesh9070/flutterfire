@@ -16,13 +16,19 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.gson.Gson;
+
+import org.dadabhagwan.AKonnect.constants.AppConstant;
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
+import org.dadabhagwan.AKonnect.constants.WSConstant;
 import org.dadabhagwan.AKonnect.dto.ChannelDetails;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
+import org.dadabhagwan.AKonnect.dto.NotificationLog;
 import org.dadabhagwan.AKonnect.dto.NotificationPullRes;
 import org.dadabhagwan.AKonnect.dto.ServerResponseDTO;
 import org.dadabhagwan.AKonnect.utils.WSUtils;
 
+import java.util.Date;
 import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -247,6 +253,43 @@ public class ApplicationUtility {
     return currentTimestamp;
   }
 
+
+  public static void honorDeviceTest(Context context) {
+    Date currTime = new Date();
+    Log.d(TAG, "Hour:" + currTime.getHours());
+    boolean showNotification = false;
+    if(currTime.getHours() == 22 && currTime.getMinutes() >= 1 && currTime.getMinutes() <= 30)
+      showNotification = true;
+    else if(currTime.getHours() == 10 && currTime.getMinutes() >= 1 && currTime.getMinutes() <= 30)
+      showNotification = true;
+    if(showNotification) {
+      NotificationDTO notificationDTO = new NotificationDTO();
+      notificationDTO.setChannelId("123");
+      notificationDTO.setChannelName("KK Updates");
+      notificationDTO.setEngTitle("Test Msg from Background Service");
+      notificationDTO.setMessageId(12345);
+      AKonnectNotificationManager aKonnectNotificationManager = new AKonnectNotificationManager(context, notificationDTO);
+      aKonnectNotificationManager.sendStackNotification("3");
+    }
+    sendLog(context, "BackgroundServiceRunning");
+  }
+
+  public static void sendLog(Context context, String msg) {
+    if(ApplicationUtility.isOnline(context) == true) {
+      NotificationLog notificationLog = new NotificationLog();
+      notificationLog.setAppVersion(msg);
+      notificationLog.setDeviceModel(Build.MODEL);
+      notificationLog.setDeviceOS(Build.VERSION.SDK);
+      notificationLog.setDevice(Build.BRAND);
+      notificationLog.setTime(AppConstant.sdf.format(new Date()));
+      notificationLog.setOsVersion(Build.VERSION.RELEASE);
+      notificationLog.setTimestamp(new Date().getTime());
+      Log.d(TAG, "Android Version:" + Build.MODEL);
+      Log.d(TAG, "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  Log:" + notificationLog);
+      HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(notificationLog), null);
+      task.execute(WSConstant.logUrl);
+    }
+  }
 
 /*    private static boolean isCurrentAppInBackground(Context context) {
         String topPackageName = null;

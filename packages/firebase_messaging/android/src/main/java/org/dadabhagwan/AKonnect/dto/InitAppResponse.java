@@ -92,8 +92,8 @@ public class InitAppResponse {
   }
 
   public int getRepeatAlarmTimeInMinutes() {
-    return 1;
-//    return repeatAlarmTimeInMinutes;
+//    return 1;
+    return repeatAlarmTimeInMinutes;
   }
 
   public void setRepeatAlarmTimeInMinutes(int repeatAlarmTimeInMinutes) {
@@ -101,8 +101,8 @@ public class InitAppResponse {
   }
 
   public int getAlarmOffsetWindowInMinutes() {
-   return 1;
-//    return alarmOffsetWindowInMinutes;
+//   return 1;
+    return alarmOffsetWindowInMinutes;
   }
 
   public void setAlarmOffsetWindowInMinutes(int alarmOffsetWindowInMinutes) {
