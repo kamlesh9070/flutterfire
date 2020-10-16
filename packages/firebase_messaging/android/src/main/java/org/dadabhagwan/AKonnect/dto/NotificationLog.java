@@ -2,6 +2,8 @@ package org.dadabhagwan.AKonnect.dto;
 
 import com.google.gson.annotations.SerializedName;
 
+import org.dadabhagwan.AKonnect.constants.WSConstant;
+
 import java.util.Date;
 
 public class NotificationLog {
@@ -21,7 +23,26 @@ public class NotificationLog {
   @SerializedName("client_id")
   String clientID;
   @SerializedName("timestamp")
-  String timestamp;
+  long timestamp;
+
+  @SerializedName("network")
+  String network;
+  @SerializedName("subscriber")
+  String subscriber;
+
+
+  @SerializedName("message_id")
+  int messageId;
+  @SerializedName("title")
+  String title;
+  @SerializedName("channel_id")
+  String channelId;
+  @SerializedName("channel_name")
+  String channelName;
+  @SerializedName("status")
+  String status;
+  @SerializedName("push_type")
+  String pushType;
 
 
   public void setFieldsFromDTO(DeviceDetail deviceDetail) {
@@ -32,7 +53,24 @@ public class NotificationLog {
       osVersion = deviceDetail.getOsVersion();
       appVersion = deviceDetail.getAppVersion();
       clientID = deviceDetail.getClientId();
-      timestamp = String.valueOf(new Date().getTime());
+      timestamp = new Date().getTime();
+    }
+  }
+
+  public void setFieldsFromUserProfile(UserProfile userProfile) {
+    if(userProfile != null) {
+      subscriber = userProfile.getSubscriber();
+    }
+  }
+
+  public void setFieldsFromNDTO(String pushType, NotificationDTO ndto) {
+    if(ndto != null) {
+      messageId = ndto.getMessageId();
+      title = ndto.getEngTitle();
+      channelId = ndto.getChannelId();
+      channelName = ndto.getChannelName();
+      status = WSConstant.STATUS_NOTIFIED;
+      this.pushType = pushType;
     }
   }
 
@@ -99,11 +137,89 @@ public class NotificationLog {
 
 
 
-  public String getTimestamp() {
+  public long getTimestamp() {
     return timestamp;
   }
 
-  public void setTimestamp(String timestamp) {
+  public void setTimestamp(long timestamp) {
     this.timestamp = timestamp;
+  }
+
+  public String getNetwork() {
+    return network;
+  }
+
+  public void setNetwork(String network) {
+    this.network = network;
+  }
+
+  public String getSubscriber() {
+    return subscriber;
+  }
+
+  public void setSubscriber(String subscriber) {
+    this.subscriber = subscriber;
+  }
+
+  public int getMessageId() {
+    return messageId;
+  }
+
+  public void setMessageId(int messageId) {
+    this.messageId = messageId;
+  }
+
+  public String getChannelId() {
+    return channelId;
+  }
+
+  public void setChannelId(String channelId) {
+    this.channelId = channelId;
+  }
+
+  public String getChannelName() {
+    return channelName;
+  }
+
+  public void setChannelName(String channelName) {
+    this.channelName = channelName;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public String getPushType() {
+    return pushType;
+  }
+
+  public void setPushType(String pushType) {
+    this.pushType = pushType;
+  }
+
+  @Override
+  public String toString() {
+    return "NotificationLog{" +
+      "deviceID='" + deviceID + '\'' +
+      ", deviceModel='" + deviceModel + '\'' +
+      ", deviceOS='" + deviceOS + '\'' +
+      ", osVersion='" + osVersion + '\'' +
+      ", appVersion='" + appVersion + '\'' +
+      ", device='" + device + '\'' +
+      ", clientID='" + clientID + '\'' +
+      ", timestamp=" + timestamp +
+      ", network='" + network + '\'' +
+      ", subscriber='" + subscriber + '\'' +
+      ", messageId=" + messageId +
+      ", title='" + title + '\'' +
+      ", channelId='" + channelId + '\'' +
+      ", channelName='" + channelName + '\'' +
+      ", status='" + status + '\'' +
+      ", pushType='" + pushType + '\'' +
+      '}';
   }
 }

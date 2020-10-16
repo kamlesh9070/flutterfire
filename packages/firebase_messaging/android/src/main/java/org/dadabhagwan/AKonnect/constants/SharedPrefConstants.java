@@ -36,8 +36,7 @@ public interface SharedPrefConstants {
   String FLUTTER_USERREGDATA = "flutter.UserRegData";
   String FLUTTER_PROFILEHASH = "flutter.ProfileHash";
   String FLUTTER_TOKEN = "flutter.Token";
-
-
+  String FLUTTER_MESSAGE_DELIVERY_URL = "message_delivery_url";
   String PREF_CHANNEL_IMAGE = "ChannelImage";
   String FILE_NAME_SENDER_ALIAS_MASTER_PREF = "SenderAliasMaster";
 

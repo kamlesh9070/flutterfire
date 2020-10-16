@@ -24,6 +24,7 @@ import org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver;
 import org.dadabhagwan.AKonnect.MyTestClass;
 import org.dadabhagwan.AKonnect.SharedPreferencesTask;
 import org.dadabhagwan.AKonnect.constants.MessageLanguage;
+import org.dadabhagwan.AKonnect.constants.WSConstant;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
 import org.dadabhagwan.AKonnect.dto.UserProfile;
 
@@ -170,7 +171,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
       int notId = 0;
       if (!ApplicationUtility.isStrNullOrEmpty(nDTO.getNotificationTitle(backgroundContext))) {
         Log.v(TAG, "FCM AKonnectNotificationManager.sendStackNotification " + nDTO.toString());
-        new AKonnectNotificationManager(this, nDTO).sendStackNotification("2");
+        new AKonnectNotificationManager(this, nDTO).sendStackNotification(WSConstant.PUSHTYPE_FCM);
       }
     } catch (Exception e) {
       Log.e(TAG, "Exception in Firebase AKonnectNotificationManager.sendStackNotification " + e.getStackTrace().toString());

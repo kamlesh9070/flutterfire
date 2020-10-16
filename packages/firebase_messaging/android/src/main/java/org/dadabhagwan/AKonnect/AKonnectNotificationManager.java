@@ -158,7 +158,7 @@ public class AKonnectNotificationManager {
           }
         }
         // Log Notification received in Firebase DB
-        WebServiceCall.sendNotificationLog(context, pushType, "" + nDTO.getMessageId());
+        WebServiceCall.sendNotificationLog(context, pushType, nDTO);
         //AlarmSetupReceiver.setAlarm(context);
       } else {
         Log.d(TAG, "sendStackNotification Record exist in NotificationMaster table :");

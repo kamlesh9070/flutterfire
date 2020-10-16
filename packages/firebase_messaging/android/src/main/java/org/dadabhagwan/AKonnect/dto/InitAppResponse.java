@@ -2,6 +2,8 @@ package org.dadabhagwan.AKonnect.dto;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Map;
+
 public class InitAppResponse {
 
 
@@ -23,6 +25,12 @@ public class InitAppResponse {
   @SerializedName("alarm_offset_window_in_minutes")
   int alarmOffsetWindowInMinutes;
 
+  @SerializedName("pull_notifications_url")
+  String pull_notifications_url;
+
+  @SerializedName("statistics_url")
+  Map<String, String> statisticsUrl;
+
   // Custom Flag
   @SerializedName("last_seen")
   String lastSeen;
@@ -38,7 +46,9 @@ public class InitAppResponse {
       ", latestAndroidAppVersion='" + latestAndroidAppVersion + '\'' +
       ", repeatAlarmTimeInMinutes=" + repeatAlarmTimeInMinutes +
       ", alarmOffsetWindowInMinutes=" + alarmOffsetWindowInMinutes +
-      ", lastSeen=" + lastSeen +
+      ", pull_notifications_url='" + pull_notifications_url + '\'' +
+      ", statisticsUrl=" + statisticsUrl +
+      ", lastSeen='" + lastSeen + '\'' +
       '}';
   }
 
@@ -117,4 +127,19 @@ public class InitAppResponse {
     this.lastSeen = lastSeen;
   }
 
+  public Map<String, String> getStatisticsUrl() {
+    return statisticsUrl;
+  }
+
+  public void setStatisticsUrl(Map<String, String> statisticsUrl) {
+    this.statisticsUrl = statisticsUrl;
+  }
+
+  public String getPull_notifications_url() {
+    return pull_notifications_url;
+  }
+
+  public void setPull_notifications_url(String pull_notifications_url) {
+    this.pull_notifications_url = pull_notifications_url;
+  }
 }

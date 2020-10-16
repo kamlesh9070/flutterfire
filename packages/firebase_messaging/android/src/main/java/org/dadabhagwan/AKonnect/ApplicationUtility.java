@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
+import org.dadabhagwan.AKonnect.constants.WSConstant;
 import org.dadabhagwan.AKonnect.dto.ChannelDetails;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
 import org.dadabhagwan.AKonnect.dto.NotificationPullRes;
@@ -227,7 +228,7 @@ public class ApplicationUtility {
     boolean isSucceeded = true;
     try {
       for (NotificationDTO notificationDTO : notificationDTOList) {
-        new AKonnectNotificationManager(context, notificationDTO).sendStackNotification("3"); // 3 - Notifications fetched from server
+        new AKonnectNotificationManager(context, notificationDTO).sendStackNotification(WSConstant.PUSHTYPE_PULL); // 3 - Notifications fetched from server
       }
     } catch (Exception e) {
       isSucceeded = false;

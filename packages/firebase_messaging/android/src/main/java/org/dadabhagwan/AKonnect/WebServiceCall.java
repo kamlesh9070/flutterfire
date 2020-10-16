@@ -12,6 +12,8 @@ import org.dadabhagwan.AKonnect.constants.WSConstant;
 import org.dadabhagwan.AKonnect.dbo.AKDBHelper;
 import org.dadabhagwan.AKonnect.dbo.DBHelper;
 import org.dadabhagwan.AKonnect.dto.DeviceDetail;
+import org.dadabhagwan.AKonnect.dto.InitAppResponse;
+import org.dadabhagwan.AKonnect.dto.NotificationDTO;
 import org.dadabhagwan.AKonnect.dto.NotificationLog;
 import org.dadabhagwan.AKonnect.dto.PullNotificationDTO;
 import org.dadabhagwan.AKonnect.dto.UserProfile;
@@ -42,7 +44,7 @@ public class WebServiceCall {
     return sharedPreferencesTask.getString(SharedPrefConstants.API_URL);
   }
 
-  public static void sendNotificationLog(Context context, String pushType, String msgId) {
+  public static void sendNotificationLog(Context context, String pushType, NotificationDTO notificationDTO) {
 
     try {
       //SharedPreferences sharedPreferences = ApplicationUtility.getAkonnectSharedPreferences(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
@@ -52,20 +54,33 @@ public class WebServiceCall {
                     Log.d(TAG, "NOTIFICATION_LOG_PREF Shared values" + entry.getKey() + ": " + entry.getValue().toString());
                 }*/
       //String ApiUrl = sharedPreferences.getString(String.valueOf("ApiUrl"), null);
-      String ApiUrl = WSConstant.logUrl;
+      String ApiUrl = getLogUrl(context);
       int ActivationSrNo = 0;
 
-      NotificationLog notificationLog = new NotificationLog();
-      notificationLog.setFieldsFromDTO(SharedPreferencesTask.getUserRegData(context));
-      notificationLog.setFieldsFromDTO(SharedPreferencesTask.getDeviceDetail(context));
+      if(!ApplicationUtility.isStrNullOrEmpty(ApiUrl)) {
+        NotificationLog notificationLog = new NotificationLog();
+        notificationLog.setFieldsFromDTO(SharedPreferencesTask.getUserRegData(context));
+        notificationLog.setFieldsFromDTO(SharedPreferencesTask.getDeviceDetail(context));
+        notificationLog.setFieldsFromNDTO(pushType, notificationDTO);
+        notificationLog.setFieldsFromUserProfile(SharedPreferencesTask.getUserProfile(context));
+        notificationLog.setNetwork(NetworkUtils.getNetworkState(context));
+        HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(notificationLog), null);
+        task.execute(ApiUrl);
+      }
 
-      HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(notificationLog), null);
-      task.execute(ApiUrl);
       //}
     } catch (Exception e) {
       Log.d(TAG, "sendNotificationLog Exception : " + e.getMessage());
     }
 
+  }
+
+
+  public static String getLogUrl(Context context) {
+    InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+    if(initAppResponse != null && initAppResponse.getStatisticsUrl() != null && !initAppResponse.getStatisticsUrl().isEmpty())
+      return initAppResponse.getStatisticsUrl().get(SharedPrefConstants.FLUTTER_MESSAGE_DELIVERY_URL);
+    return null;
   }
 
   public static void fetchMsgFromServer(Context context, AsyncResponseListner asyncResponseListner) {
@@ -85,7 +100,9 @@ public class WebServiceCall {
       Log.d(TAG, "lastNotificationId : " + lastNotificationId + ", lastMsgIdFromInbox: " + lastMsgIdFromInbox);
       UserRegData userRegData = SharedPreferencesTask.getUserRegData(context);
       UserProfile userProfile = SharedPreferencesTask.getUserProfile(context);
-      if(maxMsgId > 0 && userRegData != null) {
+      InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      Log.d(TAG, "initAppResponse : " + initAppResponse);
+      if(maxMsgId > 0 && userRegData != null && initAppResponse != null) {
         pullNotificationDTO.setLastMessageId(maxMsgId);
         pullNotificationDTO.setDevice(userRegData.getDevice());
         Log.d(TAG, "userProfile:" + userProfile);
@@ -95,8 +112,11 @@ public class WebServiceCall {
           pullNotificationDTO.setIsCoordinator(0);
         pullNotificationDTO.setProfileHash(SharedPreferencesTask.getProfileHash(context));
         pullNotificationDTO.setToken(SharedPreferencesTask.getToken(context));
-        HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(pullNotificationDTO), "", asyncResponseListner);
-        task.execute(WSConstant.pullUrl);
+        String pullUrl = initAppResponse.getPull_notifications_url();
+        if(!ApplicationUtility.isStrNullOrEmpty(pullUrl)) {
+          HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(pullNotificationDTO), "", asyncResponseListner);
+          task.execute(pullUrl);
+        }
       }
     } catch (Exception e) {
       Log.d(TAG, "sendNotificationLog Exception : " + e.getMessage());
@@ -105,6 +125,5 @@ public class WebServiceCall {
     }
 
   }
-
 
 }
