@@ -106,12 +106,14 @@ public class WebServiceCall {
         pullNotificationDTO.setLastMessageId(maxMsgId);
         pullNotificationDTO.setDevice(userRegData.getDevice());
         Log.d(TAG, "userProfile:" + userProfile);
-        if(userProfile != null && userProfile.getSenderChannelList() != null && !userProfile.getSenderChannelList().isEmpty())
+        if(userProfile != null && userProfile.getSenderChannelList() != null && !userProfile.getSenderChannelList().isEmpty()) {
           pullNotificationDTO.setIsCoordinator(1);
-        else
+          pullNotificationDTO.setProfileHash("");
+        }
+        else {
           pullNotificationDTO.setIsCoordinator(0);
-        pullNotificationDTO.setProfileHash(SharedPreferencesTask.getProfileHash(context));
-        pullNotificationDTO.setToken(SharedPreferencesTask.getToken(context));
+          pullNotificationDTO.setToken(SharedPreferencesTask.getToken(context));
+        }
         String pullUrl = initAppResponse.getPull_notifications_url();
         if(!ApplicationUtility.isStrNullOrEmpty(pullUrl)) {
           HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(pullNotificationDTO), "", asyncResponseListner);
