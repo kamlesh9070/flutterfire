@@ -50,7 +50,7 @@ public class AKonnectNotificationManager {
   private static final String TAG = "AKonnect[NotManager]";
   private static int i = 0;
   //private static final int color = 0xb71d13;
-  private static final int color = 0x0088a2;
+  private static final int color = 0xFF4F9FFF;
   private static final String group = "AKONNECTGROUP";
   private static final String NOTIFICATION_CHANNEL_GROUP_AKONNECT_ID = "AKONNECT";
   private static final String NOTIFICATION_CHANNEL_GROUP_AKONNECT_DESC = "AKonnect Senders";
