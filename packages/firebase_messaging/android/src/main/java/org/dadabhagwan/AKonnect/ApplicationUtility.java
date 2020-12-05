@@ -36,7 +36,8 @@ public class ApplicationUtility {
 
   public static final String PREF_FILE_NAME = "SenderImage";
 
-  private static final String DEFAULT_LOGO = "amlogo";
+//  private static final String DEFAULT_LOGO = "amlogo";
+private static final String DEFAULT_LOGO = "ic_launcher";
 
   public static final String DEVICE_XIAOMI = "xiaomi";
   public static final String DEVICE_HUAWEI = "HUAWEI";

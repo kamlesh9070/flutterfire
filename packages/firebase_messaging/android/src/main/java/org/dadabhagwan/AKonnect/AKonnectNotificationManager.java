@@ -12,6 +12,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.os.Build;
@@ -21,6 +22,7 @@ import android.service.notification.StatusBarNotification;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import io.flutter.plugins.firebasemessaging.R;
 
 import android.util.Log;
 
@@ -47,7 +49,8 @@ public class AKonnectNotificationManager {
 
   private static final String TAG = "AKonnect[NotManager]";
   private static int i = 0;
-  private static final int color = 0xb71d13;
+  //private static final int color = 0xb71d13;
+  private static final int color = 0x0088a2;
   private static final String group = "AKONNECTGROUP";
   private static final String NOTIFICATION_CHANNEL_GROUP_AKONNECT_ID = "AKONNECT";
   private static final String NOTIFICATION_CHANNEL_GROUP_AKONNECT_DESC = "AKonnect Senders";
@@ -196,7 +199,7 @@ public class AKonnectNotificationManager {
       .setContentTitle(notificationDTO.getChannelName())
       .setTicker(notificationDTO.getChannelName())
       .setContentText(notificationDTO.getNotificationTitle(context))
-      .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+      .setSmallIcon(getSmallIcon(context))
       .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationDTO.getNotificationTitle(context)))
       .setContentIntent(getMainActivityPendingIntent(context))
       .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getChannelId(), context))
@@ -308,7 +311,8 @@ public class AKonnectNotificationManager {
         }
 
         notificationChannel.enableLights(true);
-        notificationChannel.setLightColor(Color.RED);
+        notificationChannel.setLightColor(Color.TRANSPARENT);
+//        notificationChannel.setLightColor(Color.RED);
         //notificationChannel.setShowBadge(true);
         Log.d(TAG, "getNotificationChannel  toSetSound --> " + toSetSound + ", withSound --> " + withSound);
       }
@@ -460,7 +464,7 @@ public class AKonnectNotificationManager {
             .setGroupSummary(true)
             .setGroup(group)
             .setCategory(group)
-            .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+            .setSmallIcon(getSmallIcon(context))
             .setLargeIcon(ApplicationUtility.getSenderImage(nDTO.getChannelId(), context))
             .setStyle(inbox)
             .setContentIntent(getMainActivityPendingIntent(context))
@@ -488,7 +492,7 @@ public class AKonnectNotificationManager {
             .setGroupSummary(true)
             .setGroup(group)
             .setCategory(group)
-            .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+            .setSmallIcon(getSmallIcon(context))
             .setLargeIcon(ApplicationUtility.getSenderImage(nDTO.getChannelId(), context))
             .setStyle(inbox)
             .setContentIntent(getMainActivityPendingIntent(context))
@@ -570,7 +574,7 @@ public class AKonnectNotificationManager {
       .setTicker(notificationTitle)
       .setCategory(category)
       .setContentText(notificationLine)
-      .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+      .setSmallIcon(getSmallIcon(context))
       .setLargeIcon(ApplicationUtility.getSenderImage(category, context))
       .setStyle(inbox)
       .setGroup(group)
@@ -623,7 +627,7 @@ public class AKonnectNotificationManager {
         .setTicker(notificationTitle)
         .setCategory(category)
         .setContentText(notificationLine)
-        .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+        .setSmallIcon(getSmallIcon(context))
         .setLargeIcon(ApplicationUtility.getSenderImage(category, context))
         .setStyle(inbox)
         .setGroup(group)
@@ -728,7 +732,7 @@ public class AKonnectNotificationManager {
           .setTicker(lineCount + " Messages from " + uniqueGroupName.size() + " groups")
           .setContentText(lineCount + " Messages from " + uniqueGroupName.size() + " groups")
           .setWhen(System.currentTimeMillis())
-          .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+          .setSmallIcon(getSmallIcon(context))
           .setLargeIcon(ApplicationUtility.getSenderImage(null, context))
           .setStyle(inbox)
           //.setNumber(lineCount)
@@ -741,7 +745,10 @@ public class AKonnectNotificationManager {
   }
 
   boolean isInbox(StatusBarNotification sbn) {
-    String template = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEMPLATE);
+    String template = null;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        template = (String) sbn.getNotification().extras.get(NotificationCompat.EXTRA_TEMPLATE);
+    }
     return template != null && template.equalsIgnoreCase("android.app.Notification$InboxStyle");
   }
 
@@ -764,7 +771,7 @@ public class AKonnectNotificationManager {
       builder.setContentTitle(notificationDTO.getChannelName())
         .setTicker(notificationDTO.getChannelName())
         .setContentText(notificationDTO.getNotificationTitle(context))
-        .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+        .setSmallIcon(getSmallIcon(context))
         .setStyle(new Notification.BigTextStyle().bigText(notificationDTO.getNotificationTitle(context)))
         .setContentIntent(getMainActivityPendingIntent(context))
         .setLargeIcon(ApplicationUtility.getSenderImage(notificationDTO.getChannelId(), context))
@@ -781,6 +788,11 @@ public class AKonnectNotificationManager {
       notificationManager.createNotificationChannel(notificationChannel);
       notificationManager.notify(notificationDTO.getMessageId(), builder.build());
     }
+  }
+
+  public static int getSmallIcon(Context context) {
+    Drawable d = context.getPackageManager().getApplicationIcon(context.getApplicationInfo());
+    return context.getResources().getIdentifier("notification_icon", "drawable", context.getPackageName());
   }
 
 
