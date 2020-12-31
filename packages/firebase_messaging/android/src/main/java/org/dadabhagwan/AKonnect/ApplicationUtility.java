@@ -376,4 +376,6 @@ public class ApplicationUtility {
   public static boolean isStrNullOrEmpty(String str) {
     return str == null || str.isEmpty() || str.equalsIgnoreCase("null");
   }
+
+
 }

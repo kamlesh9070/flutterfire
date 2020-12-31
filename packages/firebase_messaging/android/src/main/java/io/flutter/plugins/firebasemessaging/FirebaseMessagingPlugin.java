@@ -11,8 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
-import androidx.annotation.NonNull;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -20,9 +19,16 @@ import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
 
+import org.dadabhagwan.AKonnect.AKonnectNotificationManager;
 import org.dadabhagwan.AKonnect.AlarmSetupReceiver;
 import org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import androidx.annotation.NonNull;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -33,9 +39,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.NewIntentListener;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /** FirebaseMessagingPlugin */
 public class FirebaseMessagingPlugin extends BroadcastReceiver
@@ -57,7 +60,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
   }
 
   private void onAttachedToEngine(Context context, BinaryMessenger binaryMessenger) {
-    Log.d(TAG, "@@@@@@@@@@@@@@@@@@  onAttachedToEngine");
+    Log.d(TAG, "@@@@@@@@@@@@@@@@@@  onAttachedToEngine context: " + context);
     this.applicationContext = context;
     channel = new MethodChannel(binaryMessenger, "plugins.flutter.io/firebase_messaging");
     final MethodChannel backgroundCallbackChannel =
@@ -74,6 +77,9 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
     LocalBroadcastManager manager = LocalBroadcastManager.getInstance(applicationContext);
     manager.registerReceiver(this, intentFilter);
     setupAlarmForAKNotification(manager);
+    AKonnectNotificationManager.getOrNotifyStickyNotification(context, false);
+    /*Intent serviceIntent = new Intent(context, NotificationService.class);
+    ContextCompat.startForegroundService(context, serviceIntent);*/
   }
 
   void setupAlarmForAKNotification(LocalBroadcastManager manager) {
@@ -194,6 +200,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
         Log.e(TAG, "There was an exception when getting callback handle from Dart side");
         e.printStackTrace();
       }
+      Log.d(TAG, "@@@@@@@@@@@@@ mainActivity: " + mainActivity);
       FlutterFirebaseMessagingService.setBackgroundSetupHandle(mainActivity, setupCallbackHandle);
       FlutterFirebaseMessagingService.startBackgroundIsolate(mainActivity, setupCallbackHandle);
       FlutterFirebaseMessagingService.setBackgroundMessageHandle(

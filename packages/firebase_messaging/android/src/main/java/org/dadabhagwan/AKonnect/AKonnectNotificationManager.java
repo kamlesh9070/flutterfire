@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
@@ -119,7 +120,7 @@ public class AKonnectNotificationManager {
             } catch (Exception e) {
             }
             NotificationManagerCompat.from(context).cancelAll();
-
+            getOrNotifyStickyNotification(context, false);
             //If Single Notification and recall come of that
             if (nDTO.isReacall() && activeNotifications.length == 1) {
               if (!isInbox(activeNotifications[0]))
@@ -349,16 +350,19 @@ public class AKonnectNotificationManager {
 
       // step through all the active StatusBarNotifications and load groupedNotification
       for (StatusBarNotification sbn : activeNotifications) {
-        String category = (String) sbn.getNotification().category;
-        if (!group.equals(category)) {
-          List<StatusBarNotification> notifications = groupedNotification.get(category);
-          if (notifications == null) {
-            notifications = new ArrayList<StatusBarNotification>();
-            groupedNotification.put(category, notifications);
+        if(sbn.getNotification().number != 61758) {
+          String category = (String) sbn.getNotification().category;
+          if (!group.equals(category)) {
+            List<StatusBarNotification> notifications = groupedNotification.get(category);
+            if (notifications == null) {
+              notifications = new ArrayList<StatusBarNotification>();
+              groupedNotification.put(category, notifications);
+            }
+            notifications.add(sbn);
           }
-          notifications.add(sbn);
         }
       }
+
       Log.d(TAG, "groupedNotification: " + groupedNotification);
 
       int k = 40;
@@ -783,5 +787,65 @@ public class AKonnectNotificationManager {
     }
   }
 
+  public static Notification getOrNotifyStickyNotification(Context context, boolean isGet) {
+    Log.d(TAG, "@#@#@#@#@#@# Inside notifyStickyNotification");
+    NotificationDTO fgNotDTO = new NotificationDTO();
+    fgNotDTO.setMessageId(61758);
+    fgNotDTO.setChannelName("Notifications Delivery");
+    fgNotDTO.setChannelId("3232");
+    fgNotDTO.setEngTitle("This is Foreground Notification");
+    fgNotDTO.setSenderSubscriber("Notifications Delivery");
+    AKonnectNotificationManager aKonnectNotificationManager = new AKonnectNotificationManager(context, fgNotDTO);
+    return aKonnectNotificationManager.getStickyNotificationAbove26API(context, fgNotDTO, isGet);
+  }
+
+  public Notification getStickyNotificationAbove26API(Context context, NotificationDTO notificationDTO, boolean isGet) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      NotificationManager notificationManager = getNotificationManager();
+      NotificationChannel notificationChannel = createFgServiceChannel(context, notificationDTO);
+      Notification.Builder builder;
+      notificationChannel.enableVibration(true);
+      notificationChannel.setVibrationPattern(vibrate); // setVibration
+      notificationChannel.setShowBadge(false);
+      builder = new Notification.Builder(context, notificationChannel.getId());
+      Bundle bundle = builder.getExtras();
+      Log.d(TAG, "bundle:" + bundle);
+      if (bundle == null)
+        bundle = new Bundle();
+      bundle.putString(MESSAGE_ID, "" + notificationDTO.getMessageId());
+      //NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+      builder.setContentTitle(notificationDTO.getChannelName())
+        .setTicker(notificationDTO.getChannelName())
+        .setContentText(notificationDTO.getNotificationTitle(context))
+        .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+        .setStyle(new Notification.BigTextStyle().bigText(notificationDTO.getNotificationTitle(context)))
+        .setContentIntent(getMainActivityPendingIntent(context))
+        .setLargeIcon(ApplicationUtility.getDefaultChannelImg(context))
+        .setWhen(System.currentTimeMillis())
+        .setColor(color)
+        .setAutoCancel(true)
+        .setCategory(notificationDTO.getChannelId())
+        .setShowWhen(true)
+        .setExtras(bundle)
+      .setOngoing(true)
+      .setNumber(notificationDTO.getMessageId())
+      ;
+      //setDefaultNotificationPropertyAbove26(builder,true,notificationChannel);
+      //notificationManager.createNotificationChannel(notificationChannel);
+      if(!isGet)
+        notificationManager.notify(notificationDTO.getMessageId(), builder.build());
+      Log.d(TAG, "#$#$#$#$#$#$#$#$#$ Sticky Notification notified.");
+      return builder.build();
+    }
+    return null;
+  }
+
+  @TargetApi(Build.VERSION_CODES.O)
+  private static NotificationChannel createFgServiceChannel(Context context, NotificationDTO notificationDTO) {
+    NotificationChannel channel = new NotificationChannel(notificationDTO.getChannelId(), notificationDTO.getChannelName(), NotificationManager.IMPORTANCE_MIN);
+    NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    mNotificationManager.createNotificationChannel(channel);
+    return channel;
+  }
 
 }
