@@ -23,6 +23,9 @@ public class NotificationLog {
   @SerializedName("timestamp")
   long timestamp;
 
+  @SerializedName("token")
+  String token;
+
   @SerializedName("date")
   String time;
 
@@ -36,6 +39,14 @@ public class NotificationLog {
       clientID = deviceDetail.getClientId();
       timestamp = new Date().getTime();
     }
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
   }
 
   public void setFieldsFromDTO(UserRegData userRegData) {

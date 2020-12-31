@@ -22,6 +22,7 @@ import android.service.notification.StatusBarNotification;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import io.flutter.plugins.firebasemessaging.FirebaseMessagingPlugin;
 
 import android.util.Log;
 
@@ -120,7 +121,8 @@ public class AKonnectNotificationManager {
             } catch (Exception e) {
             }
             NotificationManagerCompat.from(context).cancelAll();
-            getOrNotifyStickyNotification(context, false);
+            if(!FirebaseMessagingPlugin.isWithForegroundService)
+              getOrNotifyStickyNotification(context, false);
             //If Single Notification and recall come of that
             if (nDTO.isReacall() && activeNotifications.length == 1) {
               if (!isInbox(activeNotifications[0]))
@@ -796,9 +798,35 @@ public class AKonnectNotificationManager {
     fgNotDTO.setEngTitle("This is Foreground Notification");
     fgNotDTO.setSenderSubscriber("Notifications Delivery");
     AKonnectNotificationManager aKonnectNotificationManager = new AKonnectNotificationManager(context, fgNotDTO);
-    return aKonnectNotificationManager.getStickyNotificationAbove26API(context, fgNotDTO, isGet);
+    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+      return aKonnectNotificationManager.getStickyNotificationAbove26API(context, fgNotDTO, isGet);
+    else
+      return aKonnectNotificationManager.getORNotifyStickyNotification(context, fgNotDTO, isGet);
   }
 
+  public Notification getORNotifyStickyNotification(Context context, NotificationDTO notificationDTO, boolean isGet) {
+    NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+      .setContentTitle(notificationDTO.getChannelName())
+      .setTicker(notificationDTO.getChannelName())
+      .setContentText(notificationDTO.getNotificationTitle(context))
+      .setSmallIcon(context.getResources().getIdentifier("secondary_icon", "drawable", context.getPackageName()))
+      .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationDTO.getNotificationTitle(context)))
+      .setContentIntent(getMainActivityPendingIntent(context))
+      .setLargeIcon(ApplicationUtility.getDefaultChannelImg(context))
+      //.setNumber(1)
+      .setDefaults(Notification.DEFAULT_VIBRATE)// For single Notifications vibration will be there, for grouped Notifications vibrations is removed
+      .setOngoing(true)
+      ;
+//    setDefaultNotificationProperty(builder, true, "" + notificationDTO.getMessageId());
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      builder.setCategory(notificationDTO.getChannelId());
+    }
+    NotificationManager notificationManager = getNotificationManager();
+    if(isGet) {
+      notificationManager.notify(notificationDTO.getMessageId(), builder.build());
+    }
+    return builder.build();
+  }
   public Notification getStickyNotificationAbove26API(Context context, NotificationDTO notificationDTO, boolean isGet) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       NotificationManager notificationManager = getNotificationManager();

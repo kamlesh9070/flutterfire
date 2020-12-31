@@ -22,12 +22,14 @@ import com.google.firebase.messaging.RemoteMessage;
 import org.dadabhagwan.AKonnect.AKonnectNotificationManager;
 import org.dadabhagwan.AKonnect.AlarmSetupReceiver;
 import org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver;
+import org.dadabhagwan.AKonnect.services.NotificationService;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -77,10 +79,12 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
     LocalBroadcastManager manager = LocalBroadcastManager.getInstance(applicationContext);
     manager.registerReceiver(this, intentFilter);
     setupAlarmForAKNotification(manager);
-    AKonnectNotificationManager.getOrNotifyStickyNotification(context, false);
-    /*Intent serviceIntent = new Intent(context, NotificationService.class);
-    ContextCompat.startForegroundService(context, serviceIntent);*/
+//    AKonnectNotificationManager.getOrNotifyStickyNotification(context, false);
+    Intent serviceIntent = new Intent(context, NotificationService.class);
+    ContextCompat.startForegroundService(context, serviceIntent);
   }
+
+  public static final boolean isWithForegroundService = true;
 
   void setupAlarmForAKNotification(LocalBroadcastManager manager) {
     Log.d(TAG, "@@@@@@@@@@@@@@@@@@  setupAlarmForAKNotification" + manager);
