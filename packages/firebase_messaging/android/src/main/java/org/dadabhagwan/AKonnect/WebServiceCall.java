@@ -102,18 +102,30 @@ public class WebServiceCall {
       UserProfile userProfile = SharedPreferencesTask.getUserProfile(context);
       InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
       Log.d(TAG, "initAppResponse : " + initAppResponse);
+
       if(maxMsgId > 0 && userRegData != null && initAppResponse != null) {
+
+        String token = SharedPreferencesTask.getToken(context);
+        if(!ApplicationUtility.isStrNullOrEmpty(token)) {
+          pullNotificationDTO.setToken(SharedPreferencesTask.getToken(context));
+        } else {
+          pullNotificationDTO.setDevice(userRegData.getDevice());
+          pullNotificationDTO.setSubscriber(userProfile.getSubscriber());
+        }
+
         pullNotificationDTO.setLastMessageId(maxMsgId);
-        pullNotificationDTO.setDevice(userRegData.getDevice());
         Log.d(TAG, "userProfile:" + userProfile);
+        String profileHash = SharedPreferencesTask.getProfileHash(context);
+        if(!ApplicationUtility.isStrNullOrEmpty(profileHash))
+          pullNotificationDTO.setProfileHash(profileHash);
+
         if(userProfile != null && userProfile.getSenderChannelList() != null && !userProfile.getSenderChannelList().isEmpty()) {
           pullNotificationDTO.setIsCoordinator(1);
-          pullNotificationDTO.setProfileHash("");
         }
         else {
           pullNotificationDTO.setIsCoordinator(0);
-          pullNotificationDTO.setToken(SharedPreferencesTask.getToken(context));
         }
+
         String pullUrl = initAppResponse.getPull_notifications_url();
         if(!ApplicationUtility.isStrNullOrEmpty(pullUrl)) {
           HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(pullNotificationDTO), "", asyncResponseListner);
