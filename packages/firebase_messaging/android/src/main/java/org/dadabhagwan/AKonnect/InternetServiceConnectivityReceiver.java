@@ -12,6 +12,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
+import org.dadabhagwan.AKonnect.dto.InitAppResponse;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,11 +30,13 @@ public class InternetServiceConnectivityReceiver extends BroadcastReceiver imple
     Log.d(TAG, "Inside InternetServiceConnectivityReceiver.onReceive ");
     boolean AlarmActiveFlag = true;
     try {
-      SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
-      AlarmActiveFlag = sharedPreferencesTask.getBoolean(SharedPrefConstants.ALARM_ACTIVE_FLAG);
-
-      if (ApplicationUtility.isOnline(context) == true && AlarmActiveFlag) {
-        fetchMsgFromServer(context);
+      InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      Log.d(TAG, "initAppResponse:" + initAppResponse);
+      if(initAppResponse != null) {
+        AlarmActiveFlag = SharedPreferencesTask.getInitAppResponse(context).isAlarmActiveFlag();
+        if (ApplicationUtility.isOnline(context) == true && AlarmActiveFlag) {
+          fetchMsgFromServer(context);
+        }
       }
     } catch (Exception e) {
       Log.e(TAG, "Error inside InternetServiceConnectivityReceiver message." + e.getMessage(), e);
@@ -47,7 +50,8 @@ public class InternetServiceConnectivityReceiver extends BroadcastReceiver imple
     try {
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
       long lastSeenTimestamp = sharedPreferencesTask.getLong(SharedPrefConstants.LAST_SEEN_TIMESTAMP);
-      int repeatAlramTimeInMin = sharedPreferencesTask.getInt(SharedPrefConstants.REPEAT_ALARM_TIME_IN_MINUTES);
+      InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      int repeatAlramTimeInMin = initAppResponse.getRepeatAlarmTimeInMinutes();
       long currentTimestamp = ApplicationUtility.getCurrentTimestamp();
 
       // We only call API if time difference is greater than Alarm Interval time
@@ -66,19 +70,9 @@ public class InternetServiceConnectivityReceiver extends BroadcastReceiver imple
 
   //Here you will receive the result fired from async class of onPostExecute(result) method.
   @Override
-  public void onPostExecute(JSONObject output) {
+  public void onPostExecute(String output) {
     try {
-      Log.d(TAG, "processFinish output :: " + output);
-      Log.d(TAG, "processFinishoutput.toString() :: " + output.toString());
-      Log.d(TAG, "processFinish output.getJSONArray.length----------------->" + output.getJSONArray("result").length());
-
-      JSONArray resultArray = output.getJSONArray("result");
-      boolean processFlag = output.getBoolean("processFlag");
-      String error = output.getString("error");
-
-      if (processFlag && resultArray.length() > 0) {
-        ApplicationUtility.generateNotificationsForFetchMessages(context, resultArray);
-      }
+      ApplicationUtility.handlePullNotificationRes(context, output);
       AlarmSetupReceiver.setAlarm(context);
     } catch (Exception e) {
       Log.e(TAG, "processFinish output Exception:: " + e.getMessage());

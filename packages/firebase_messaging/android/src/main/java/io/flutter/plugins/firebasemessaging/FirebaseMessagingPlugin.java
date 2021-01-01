@@ -19,6 +19,10 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.RemoteMessage;
+
+import org.dadabhagwan.AKonnect.AlarmSetupReceiver;
+import org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver;
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -43,6 +47,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
   private MethodChannel channel;
   private Context applicationContext;
   private Activity mainActivity;
+  InternetServiceConnectivityReceiver internetServiceConnectivityReceiver=new InternetServiceConnectivityReceiver();
 
   public static void registerWith(Registrar registrar) {
     FirebaseMessagingPlugin instance = new FirebaseMessagingPlugin();
@@ -52,6 +57,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
   }
 
   private void onAttachedToEngine(Context context, BinaryMessenger binaryMessenger) {
+    Log.d(TAG, "@@@@@@@@@@@@@@@@@@  onAttachedToEngine");
     this.applicationContext = context;
     channel = new MethodChannel(binaryMessenger, "plugins.flutter.io/firebase_messaging");
     final MethodChannel backgroundCallbackChannel =
@@ -67,6 +73,24 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
     intentFilter.addAction(FlutterFirebaseMessagingService.ACTION_REMOTE_MESSAGE);
     LocalBroadcastManager manager = LocalBroadcastManager.getInstance(applicationContext);
     manager.registerReceiver(this, intentFilter);
+    setupAlarmForAKNotification(manager);
+  }
+
+  void setupAlarmForAKNotification(LocalBroadcastManager manager) {
+    Log.d(TAG, "@@@@@@@@@@@@@@@@@@  setupAlarmForAKNotification" + manager);
+    AlarmSetupReceiver.setAlarm(applicationContext);
+    registerConnectivityReceiver(manager);
+  }
+
+  void registerConnectivityReceiver(LocalBroadcastManager manager) {
+    try {
+      Log.d(TAG, "@@@@@@@@@@@@@@@@@@  registerConnectivityReceiver" + manager);
+      internetServiceConnectivityReceiver = new InternetServiceConnectivityReceiver();
+      manager.registerReceiver(internetServiceConnectivityReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+    } catch (Exception e) {
+      Log.e(TAG, "Exception in MainActivity.onDestroy ----> " + e.getMessage());
+      e.printStackTrace();
+    }
   }
 
   private void setActivity(Activity flutterActivity) {

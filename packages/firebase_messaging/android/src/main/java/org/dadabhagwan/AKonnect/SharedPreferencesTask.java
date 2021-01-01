@@ -9,7 +9,10 @@ import com.google.gson.reflect.TypeToken;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.dto.ChannelDetails;
+import org.dadabhagwan.AKonnect.dto.DeviceDetail;
+import org.dadabhagwan.AKonnect.dto.InitAppResponse;
 import org.dadabhagwan.AKonnect.dto.UserProfile;
+import org.dadabhagwan.AKonnect.dto.UserRegData;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -27,7 +30,9 @@ public class SharedPreferencesTask {
   private static ArrayList<ChannelDetails> channelDetails;
   private static Map<String, ChannelDetails> channelById = new HashMap<>();
   private static UserProfile userProfile;
-
+  private static DeviceDetail deviceDetail;
+  private static InitAppResponse initAppResponse;
+  private static UserRegData userRegData;
   public static SharedPreferencesTask getSharedPreferenceTask(Context context, String sharedPrefFileName) {
     SharedPreferencesTask sTask = sharedPreferencesTaskMap.get(sharedPrefFileName);
     if (sTask == null) {
@@ -72,13 +77,17 @@ public class SharedPreferencesTask {
   }
 
   public int getInt(String key) {
+    return getInt(key, 0);
+  }
+
+  public int getInt(String key, int defaultValue) {
     SharedPreferences sharedPreferences = context.getSharedPreferences(sharedPrefFileName,
       Context.MODE_PRIVATE);
 
     if (sharedPreferences.contains(key)) {
-      return sharedPreferences.getInt(key, 0);
+      return sharedPreferences.getInt(key, defaultValue);
     } else {
-      return 0;
+      return defaultValue;
     }
   }
 
@@ -133,20 +142,8 @@ public class SharedPreferencesTask {
   }
 
 
-  public static UserProfile getUserProfile(Context context) {
-    try {
-      SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_APP_MAIN_PREF);
-      String userProfileJson = sharedPreferencesTask.getString(SharedPrefConstants.FLUTTER_USERPROFILE);
-      Log.d(TAG, "$$$$$ userProfileJson:" + userProfileJson);
-      return new Gson().fromJson(userProfileJson, UserProfile.class);
-    } catch (Exception e) {
-      Log.e(TAG, "Error while getting User Profile", e);
-    }
-    return null;
-  }
-
   public static ChannelDetails getChannelDetails(String channelId, Context context) {
-    getChannelDetailsList(context);
+    loadChannelDetailsList(context);
     if (channelById.isEmpty()) {
       for (ChannelDetails channelDetails : channelDetails) {
         channelById.put(channelDetails.getChannelId(), channelDetails);
@@ -155,7 +152,7 @@ public class SharedPreferencesTask {
     return channelById.get(channelId);
   }
 
-  public static ArrayList<ChannelDetails> getChannelDetailsList(Context context) {
+  public static void loadChannelDetailsList(Context context) {
     try {
       if (channelDetails == null) {
         SharedPreferencesTask sharedPreferencesTask = SharedPreferencesTask.getSharedPreferenceTask(context, SharedPrefConstants.FILE_NAME_APP_MAIN_PREF);
@@ -166,11 +163,71 @@ public class SharedPreferencesTask {
           channelDetails = new Gson().fromJson(channelsStr, channelListType);
         }
       }
-      return channelDetails;
     } catch (Exception e) {
-      Log.e(TAG, "Error while getting User Profile", e);
+      Log.e(TAG, "Error while getting Channel Details", e);
+    }
+  }
+
+  public static InitAppResponse getInitAppResponse(Context context) {
+    return getDTO(context, SharedPrefConstants.FLUTTER_INITAPPRESPONSE, initAppResponse, InitAppResponse.class);
+  }
+
+  public static UserProfile getUserProfile(Context context) {
+    return getDTO(context, SharedPrefConstants.FLUTTER_USERPROFILE, userProfile, UserProfile.class);
+  }
+
+  public static DeviceDetail getDeviceDetail(Context context) {
+    return getDTO(context, SharedPrefConstants.FLUTTER_DEVICEDETAILS, deviceDetail, DeviceDetail.class);
+  }
+
+  public static UserRegData getUserRegData(Context context) {
+    return getDTO(context, SharedPrefConstants.FLUTTER_USERREGDATA, userRegData, UserRegData.class);
+  }
+
+  public static <T> T getDTO(Context context, String prefName, T dto, Class<T> tClass) {
+    try {
+      if (dto == null) {
+        SharedPreferencesTask sharedPreferencesTask = SharedPreferencesTask.getSharedPreferenceTask(context, SharedPrefConstants.FILE_NAME_APP_MAIN_PREF);
+        String dtoStr = sharedPreferencesTask.getString(prefName);
+        if (!ApplicationUtility.isStrNullOrEmpty(dtoStr)) {
+          dto = new Gson().fromJson(dtoStr, tClass);
+        }
+      }
+      return dto;
+    } catch (Exception e) {
+      Log.e(TAG, "Error while getting DTO Details. prefName:" + prefName, e);
     }
     return null;
   }
+
+  public static void saveInitAppResponse(Context context) {
+    if(initAppResponse != null)
+      saveDTO(context, SharedPrefConstants.FLUTTER_INITAPPRESPONSE, initAppResponse);
+  }
+
+  public static <T> void saveDTO(Context context, String prefName, T dto) {
+    SharedPreferencesTask sharedPreferencesTask = SharedPreferencesTask.getSharedPreferenceTask(context, SharedPrefConstants.FILE_NAME_APP_MAIN_PREF);
+    String jsonStr = new Gson().toJson(dto);
+    sharedPreferencesTask.saveString(prefName, jsonStr);
+  }
+
+  public static String getProfileHash(Context context) {
+    return getFlutterSharedPrefString(context, SharedPrefConstants.FLUTTER_PROFILEHASH);
+  }
+
+  public static String getToken(Context context) {
+    return getFlutterSharedPrefString(context, SharedPrefConstants.FLUTTER_TOKEN);
+  }
+
+  public static String getFlutterSharedPrefString(Context context, String prefName) {
+    SharedPreferencesTask sharedPreferencesTask = SharedPreferencesTask.getSharedPreferenceTask(context, SharedPrefConstants.FILE_NAME_APP_MAIN_PREF);
+    return sharedPreferencesTask.getString(prefName);
+  }
+
+  public static void saveFlutterSharedPrefString(Context context, String prefName, String value) {
+    SharedPreferencesTask sharedPreferencesTask = SharedPreferencesTask.getSharedPreferenceTask(context, SharedPrefConstants.FILE_NAME_APP_MAIN_PREF);
+    sharedPreferencesTask.saveString(prefName, value);
+  }
+
 
 }

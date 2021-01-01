@@ -9,7 +9,8 @@ public class ImageAndTitleMapper {
   private static final String SHEEL_SADHAK = "sheel_sadhak";
   private static final String DEUTSCHE_NEWS = "deutsche_news";
   private static final String DELHI_UPDATES = "delhi_updates";
-  private static final String DEFAULT = "amlogo";
+//  private static final String DEFAULT = "amlogo";
+  private static final String DEFAULT = "ic_launcher";
 
   public static String getImageName(String title) {
     if (title == null) {

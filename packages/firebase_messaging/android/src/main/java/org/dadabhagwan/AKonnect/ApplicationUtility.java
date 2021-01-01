@@ -12,24 +12,19 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.text.Html;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
+import org.dadabhagwan.AKonnect.constants.WSConstant;
 import org.dadabhagwan.AKonnect.dto.ChannelDetails;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.dadabhagwan.AKonnect.dto.NotificationPullRes;
+import org.dadabhagwan.AKonnect.dto.ServerResponseDTO;
+import org.dadabhagwan.AKonnect.utils.WSUtils;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -41,7 +36,8 @@ public class ApplicationUtility {
 
   public static final String PREF_FILE_NAME = "SenderImage";
 
-  private static final String DEFAULT_LOGO = "amlogo";
+//  private static final String DEFAULT_LOGO = "amlogo";
+private static final String DEFAULT_LOGO = "ic_launcher";
 
   public static final String DEVICE_XIAOMI = "xiaomi";
   public static final String DEVICE_HUAWEI = "HUAWEI";
@@ -88,7 +84,7 @@ public class ApplicationUtility {
             channelImg = ImageUtility.getDownloadedImage(channel.getAvatarUrl());
             if (channelImg != null) {
               bitMapStr = ImageUtility.bitMapToString(channelImg);
-              sharedPreferences.saveString(channel.getChannelId(), bitMapStr);
+              sharedPreferences.saveString(channel.getAvatarUrl(), bitMapStr);
             }
           } else
             channelImg = ImageUtility.stringToBitMap(bitMapStr);
@@ -206,19 +202,34 @@ public class ApplicationUtility {
     return connected;
   }
 
-  public static boolean generateNotificationsForFetchMessages(Context context, JSONArray resultArray) {
+  public static void handlePullNotificationRes(Context context, String response) {
+    try {
+      Log.d(TAG, "handlePullNotificationRes response:" + response);
+      ServerResponseDTO<NotificationPullRes> serverResponseDTO = WSUtils.getResponse(response, NotificationPullRes.class);
+      if (serverResponseDTO != null && serverResponseDTO.isSuccess()) {
+        NotificationPullRes notificationPullRes = serverResponseDTO.getData();
+        Log.d(TAG, "handlePullNotificationRes notificationPullRes:" + notificationPullRes);
+        if (notificationPullRes != null && notificationPullRes.isProcessFlag()) {
+          List<NotificationDTO> notificationDTOs = notificationPullRes.getNotificationDTOList();
+          if (notificationDTOs != null && !notificationDTOs.isEmpty())
+            ApplicationUtility.generateNotificationsForFetchMessages(context, serverResponseDTO.getData().getNotificationDTOList());
+          if(!isStrNullOrEmpty(notificationPullRes.getProfile_hash()))
+            SharedPreferencesTask.saveFlutterSharedPrefString(context, SharedPrefConstants.FLUTTER_PROFILEHASH, notificationPullRes.getProfile_hash());
+          if(!isStrNullOrEmpty(notificationPullRes.getToken()))
+            SharedPreferencesTask.saveFlutterSharedPrefString(context, SharedPrefConstants.FLUTTER_TOKEN, notificationPullRes.getToken());
+        }
+      }
+    } catch (Exception e) {
+      Log.e(TAG, "processFinish output Exception:: " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
+  public static boolean generateNotificationsForFetchMessages(Context context, List<NotificationDTO> notificationDTOList) {
     boolean isSucceeded = true;
     try {
-      for (int i = 0; i < resultArray.length(); i++) {
-        JSONObject jsonObject = resultArray.getJSONObject(i);
-
-        NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setMessageId(jsonObject.getInt("MsgId"));
-        notificationDTO.setChannelName(jsonObject.getString("Title"));
-        notificationDTO.setNotificationTitle(jsonObject.getString("MsgText"));
-        notificationDTO.setChannelId(jsonObject.getString("SenderAliasId") == null ? jsonObject.getString("Title") : jsonObject.getString("SenderAliasId"));
-        Log.d(TAG, " generateNotificationsForFetchMessages  notificationDTO" + notificationDTO.toString());
-        new AKonnectNotificationManager(context, notificationDTO).sendStackNotification("3"); // 3 - Notifications fetched from server
+      for (NotificationDTO notificationDTO : notificationDTOList) {
+        new AKonnectNotificationManager(context, notificationDTO).sendStackNotification(WSConstant.PUSHTYPE_PULL); // 3 - Notifications fetched from server
       }
     } catch (Exception e) {
       isSucceeded = false;
@@ -322,6 +333,6 @@ public class ApplicationUtility {
         }*/
 
   public static boolean isStrNullOrEmpty(String str) {
-    return str == null || str.isEmpty();
+    return str == null || str.isEmpty() || str.equalsIgnoreCase("null");
   }
 }

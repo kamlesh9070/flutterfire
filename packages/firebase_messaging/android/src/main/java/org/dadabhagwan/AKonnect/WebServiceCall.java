@@ -2,10 +2,22 @@ package org.dadabhagwan.AKonnect;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
+import org.dadabhagwan.AKonnect.constants.WSConstant;
+import org.dadabhagwan.AKonnect.dbo.AKDBHelper;
 import org.dadabhagwan.AKonnect.dbo.DBHelper;
+import org.dadabhagwan.AKonnect.dto.DeviceDetail;
+import org.dadabhagwan.AKonnect.dto.InitAppResponse;
+import org.dadabhagwan.AKonnect.dto.NotificationDTO;
+import org.dadabhagwan.AKonnect.dto.NotificationLog;
+import org.dadabhagwan.AKonnect.dto.PullNotificationDTO;
+import org.dadabhagwan.AKonnect.dto.UserProfile;
+import org.dadabhagwan.AKonnect.dto.UserRegData;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -32,7 +44,7 @@ public class WebServiceCall {
     return sharedPreferencesTask.getString(SharedPrefConstants.API_URL);
   }
 
-  public static void sendNotificationLog(Context context, String pushType, String msgId) {
+  public static void sendNotificationLog(Context context, String pushType, NotificationDTO notificationDTO) {
 
     try {
       //SharedPreferences sharedPreferences = ApplicationUtility.getAkonnectSharedPreferences(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
@@ -42,41 +54,20 @@ public class WebServiceCall {
                     Log.d(TAG, "NOTIFICATION_LOG_PREF Shared values" + entry.getKey() + ": " + entry.getValue().toString());
                 }*/
       //String ApiUrl = sharedPreferences.getString(String.valueOf("ApiUrl"), null);
-      String ApiUrl = getApiUrl(context);
+      String ApiUrl = getLogUrl(context);
       int ActivationSrNo = 0;
 
-      if (ApiUrl != null && ApiUrl.trim() != "") {
-        SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
-        String ApiKey = sharedPreferencesTask.getString(SharedPrefConstants.API_KEY);
-        String DeviceModel = sharedPreferencesTask.getString(SharedPrefConstants.DEVICE_MODEL);
-        String DeviceOsVersion = sharedPreferencesTask.getString(SharedPrefConstants.DEVICE_OS_VERSION);
-        String AppVersion = sharedPreferencesTask.getString(SharedPrefConstants.APP_VERSION);
-        String NetworkState = NetworkUtils.getNetworkState(context);
-        try {
-          ActivationSrNo = Integer.parseInt(sharedPreferencesTask.getString(SharedPrefConstants.ACTIVATION_SRNO));
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-        ;
-
-        Map<String, String> postData = new HashMap<String, String>();
-        //postData.put("ApiKey", ApiKey);
-        postData.put("ActivationSrNo", "" + ActivationSrNo);
-        postData.put("DeviceModel", DeviceModel);
-        postData.put("OsVersion", DeviceOsVersion);
-        postData.put("AppVersion", AppVersion);
-        postData.put("NetworkState", NetworkState);
-        postData.put("PushType", pushType);
-        postData.put("MsgId", msgId);
-        postData.put("NotificationReceivedTime", new Date().toString());
-
-        for (Map.Entry<String, ?> entry : postData.entrySet()) {
-          Log.d(TAG, "sendNotificationLog postData values" + entry.getKey() + ": " + entry.getValue().toString());
-        }
-
-        HttpPostAsyncTask task = new HttpPostAsyncTask(postData, ApiKey);
+      if(!ApplicationUtility.isStrNullOrEmpty(ApiUrl)) {
+        NotificationLog notificationLog = new NotificationLog();
+        notificationLog.setFieldsFromDTO(SharedPreferencesTask.getUserRegData(context));
+        notificationLog.setFieldsFromDTO(SharedPreferencesTask.getDeviceDetail(context));
+        notificationLog.setFieldsFromNDTO(pushType, notificationDTO);
+        notificationLog.setFieldsFromUserProfile(SharedPreferencesTask.getUserProfile(context));
+        notificationLog.setNetwork(NetworkUtils.getNetworkState(context));
+        HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(notificationLog), null);
         task.execute(ApiUrl);
       }
+
       //}
     } catch (Exception e) {
       Log.d(TAG, "sendNotificationLog Exception : " + e.getMessage());
@@ -84,46 +75,61 @@ public class WebServiceCall {
 
   }
 
+
+  public static String getLogUrl(Context context) {
+    InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+    if(initAppResponse != null && initAppResponse.getStatisticsUrl() != null && !initAppResponse.getStatisticsUrl().isEmpty())
+      return initAppResponse.getStatisticsUrl().get(SharedPrefConstants.FLUTTER_MESSAGE_DELIVERY_URL);
+    return null;
+  }
+
   public static void fetchMsgFromServer(Context context, AsyncResponseListner asyncResponseListner) {
+    Log.d(TAG, "Inside fetchMsgFromServer");
     try {
       int lastMsgIdFromInbox = 0;
       int maxMsgId = 0;
       int lastNotificationId = 0;
-      int ActivationSrNo = 0;
+      PullNotificationDTO pullNotificationDTO = new PullNotificationDTO();
+      SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
+      lastNotificationId = sharedPreferencesTask.getInt(SharedPrefConstants.LAST_MSGID_FROM_NOTIFICATION);
+      lastMsgIdFromInbox = AKDBHelper.getInstance(context).getMaxMsgIdFromMessageMaster();
+      maxMsgId = Math.max(lastNotificationId, lastMsgIdFromInbox);
 
-      String latestMessagesByMsgIdApiUrl = getLatestMessagesByMsgIdApiUrl(context);
-      if (latestMessagesByMsgIdApiUrl != null && latestMessagesByMsgIdApiUrl.trim() != "") {
-        SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
-        lastMsgIdFromInbox = sharedPreferencesTask.getInt(SharedPrefConstants.LAST_MSGID_FROM_INBOX);
-        lastNotificationId = sharedPreferencesTask.getInt(SharedPrefConstants.LAST_MSGID_FROM_NOTIFICATION);
-        maxMsgId = (lastNotificationId >= lastMsgIdFromInbox) ? lastNotificationId : lastMsgIdFromInbox;
+      //Temp
+      //maxMsgId = 24332;
+      Log.d(TAG, "lastNotificationId : " + lastNotificationId + ", lastMsgIdFromInbox: " + lastMsgIdFromInbox);
+      UserRegData userRegData = SharedPreferencesTask.getUserRegData(context);
+      UserProfile userProfile = SharedPreferencesTask.getUserProfile(context);
+      InitAppResponse initAppResponse = SharedPreferencesTask.getInitAppResponse(context);
+      Log.d(TAG, "initAppResponse : " + initAppResponse);
 
-        int SubscriberId = sharedPreferencesTask.getInt(SharedPrefConstants.SUBSCRIBER_ID);
-        try {
-          ActivationSrNo = Integer.parseInt(sharedPreferencesTask.getString(SharedPrefConstants.ACTIVATION_SRNO));
-        } catch (Exception e) {
-          e.printStackTrace();
+      if(maxMsgId > 0 && userRegData != null && initAppResponse != null) {
+
+        String token = SharedPreferencesTask.getToken(context);
+        if(!ApplicationUtility.isStrNullOrEmpty(token)) {
+          pullNotificationDTO.setToken(SharedPreferencesTask.getToken(context));
+        } else {
+          pullNotificationDTO.setDevice(userRegData.getDevice());
+          pullNotificationDTO.setSubscriber(userProfile.getSubscriber());
         }
-        ;
 
-        //For testing only
-        //maxMsgId=10645;
+        pullNotificationDTO.setLastMessageId(maxMsgId);
+        Log.d(TAG, "userProfile:" + userProfile);
+        String profileHash = SharedPreferencesTask.getProfileHash(context);
+        if(!ApplicationUtility.isStrNullOrEmpty(profileHash))
+          pullNotificationDTO.setProfileHash(profileHash);
 
-        if (SubscriberId > 0 && ActivationSrNo > 0) {
-          Map<String, String> postData = new HashMap<String, String>();
-          postData.put("ActivationSrNo", "" + ActivationSrNo);
-          postData.put("SubscriberId", "" + SubscriberId);
-          postData.put("MsgId", "" + maxMsgId);
+        if(userProfile != null && userProfile.getSenderChannelList() != null && !userProfile.getSenderChannelList().isEmpty()) {
+          pullNotificationDTO.setIsCoordinator(1);
+        }
+        else {
+          pullNotificationDTO.setIsCoordinator(0);
+        }
 
-          Log.d(TAG, "fetchMsgFromServer :: lastMsgIdFromInbox : " + lastMsgIdFromInbox + " , lastNotificationId : " + lastNotificationId
-            + " , latestMessagesByMsgIdApiUrl : " + latestMessagesByMsgIdApiUrl);
-
-          for (Map.Entry<String, ?> entry : postData.entrySet()) {
-            Log.d(TAG, "fetchMsgFromServer postData values" + entry.getKey() + ": " + entry.getValue().toString());
-          }
-
-          HttpPostAsyncTask task = new HttpPostAsyncTask(postData, "", asyncResponseListner);
-          task.execute(latestMessagesByMsgIdApiUrl);
+        String pullUrl = initAppResponse.getPull_notifications_url();
+        if(!ApplicationUtility.isStrNullOrEmpty(pullUrl)) {
+          HttpPostAsyncTask task = new HttpPostAsyncTask(new Gson().toJson(pullNotificationDTO), "", asyncResponseListner);
+          task.execute(pullUrl);
         }
       }
     } catch (Exception e) {
@@ -133,6 +139,5 @@ public class WebServiceCall {
     }
 
   }
-
 
 }
