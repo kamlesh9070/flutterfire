@@ -1,6 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="io.flutter.plugins.firebasemessaging">
 
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+
+  <!-- Always required on api < 21, needed to keep a wake lock while your job is running -->
+  <uses-permission android:name="android.permission.WAKE_LOCK"/>
+  <!-- Required on api < 21 if you are using setRequiredNetworkType(int) -->
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <!-- Required on all api levels if you are using setPersisted(true) -->
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
   <application>
     <service android:name="com.google.firebase.components.ComponentDiscoveryService">
       <meta-data
@@ -17,14 +28,20 @@
 
     <!-- Akonnect Receiver -->
 
-    <receiver android:name="org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver">
+    <!--<receiver android:name="org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver">
       <intent-filter>
         <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
         <action android:name="android.intent.action.BOOT_COMPLETED" />
         <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
-        <!--<action android:name="android.net.wifi.STATE_CHANGE" />-->
+        &lt;!&ndash;<action android:name="android.net.wifi.STATE_CHANGE" />&ndash;&gt;
       </intent-filter>
-    </receiver>
+    </receiver>-->
+
+    <service
+      android:name="org.dadabhagwan.AKonnect.services.NetworkSchedulerService"
+      android:exported="true"
+      android:permission="android.permission.BIND_JOB_SERVICE"/>
+
     <receiver android:name="org.dadabhagwan.AKonnect.AlarmReceiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />

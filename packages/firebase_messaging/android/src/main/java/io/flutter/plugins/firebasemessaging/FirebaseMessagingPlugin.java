@@ -5,13 +5,18 @@
 package io.flutter.plugins.firebasemessaging;
 
 import android.app.Activity;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -22,6 +27,7 @@ import com.google.firebase.messaging.RemoteMessage;
 
 import org.dadabhagwan.AKonnect.AlarmSetupReceiver;
 import org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver;
+import org.dadabhagwan.AKonnect.services.NetworkSchedulerService;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -74,12 +80,30 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
     LocalBroadcastManager manager = LocalBroadcastManager.getInstance(applicationContext);
     manager.registerReceiver(this, intentFilter);
     setupAlarmForAKNotification(manager);
+    registerConnectivityReceiver(manager);
+    scheduleJob();
+  }
+
+  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+  private void scheduleJob() {
+    JobInfo myJob = new JobInfo.Builder(0, new ComponentName(applicationContext, NetworkSchedulerService.class))
+//      .setRequiresCharging(true)
+//      .setMinimumLatency(1000)
+//      .setOverrideDeadline(15000)
+      .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+      .setPersisted(true)
+      .build();
+
+    JobScheduler jobScheduler = (JobScheduler) applicationContext.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+    jobScheduler.schedule(myJob);
+    Intent startServiceIntent = new Intent(applicationContext, NetworkSchedulerService.class);
+    applicationContext.startService(startServiceIntent);
   }
 
   void setupAlarmForAKNotification(LocalBroadcastManager manager) {
-    Log.d(TAG, "@@@@@@@@@@@@@@@@@@  setupAlarmForAKNotification" + manager);
+      Log.d(TAG, "@@@@@@@@@@@@@@@@@@  setupAlarmForAKNotification" + manager);
     AlarmSetupReceiver.setAlarm(applicationContext);
-    registerConnectivityReceiver(manager);
+//    registerConnectivityReceiver(manager);
   }
 
   void registerConnectivityReceiver(LocalBroadcastManager manager) {
@@ -87,6 +111,8 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
       Log.d(TAG, "@@@@@@@@@@@@@@@@@@  registerConnectivityReceiver" + manager);
       internetServiceConnectivityReceiver = new InternetServiceConnectivityReceiver();
       manager.registerReceiver(internetServiceConnectivityReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+      manager.registerReceiver(internetServiceConnectivityReceiver, new IntentFilter("android.net.wifi.WIFI_STATE_CHANGED"));
+      manager.registerReceiver(internetServiceConnectivityReceiver, new IntentFilter("android.intent.action.BOOT_COMPLETED"));
     } catch (Exception e) {
       Log.e(TAG, "Exception in MainActivity.onDestroy ----> " + e.getMessage());
       e.printStackTrace();

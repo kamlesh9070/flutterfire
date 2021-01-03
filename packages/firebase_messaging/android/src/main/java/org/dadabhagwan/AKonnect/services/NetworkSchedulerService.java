@@ -1,35 +1,75 @@
-package org.dadabhagwan.AKonnect;
+package org.dadabhagwan.AKonnect.services;
 
-
-import android.content.BroadcastReceiver;
+import android.app.job.JobParameters;
+import android.app.job.JobService;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.SystemClock;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.dadabhagwan.AKonnect.AlarmSetupReceiver;
+import org.dadabhagwan.AKonnect.ApplicationUtility;
+import org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver;
+import org.dadabhagwan.AKonnect.SharedPreferencesTask;
+import org.dadabhagwan.AKonnect.WebServiceCall;
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.dto.InitAppResponse;
-import org.dadabhagwan.AKonnect.dto.NotificationDTO;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
-public class InternetServiceConnectivityReceiver extends BroadcastReceiver implements AsyncResponseListner {
+import androidx.annotation.RequiresApi;
 
-  public static final String PREFS_NAME = "PushyRestartPrefs";
-  private static final String Last_Pushy_Restart = "LastPushyRestart";
-  private static final long Min_Restart_Interval = 5 * 60 * 1000; // 5 Mins
-  private static final String TAG = "AKonnect[Conn]";
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+public class NetworkSchedulerService extends JobService implements
+  ConnectivityReceiver.ConnectivityReceiverListener {
   Context context = null;
+  private static final String TAG = NetworkSchedulerService.class.getSimpleName();
+
+  private ConnectivityReceiver mConnectivityReceiver;
 
   @Override
-  public void onReceive(Context context, Intent intent) {
-    Log.d(TAG, "Inside InternetServiceConnectivityReceiver.onReceive ");
-    pullMsgFromServer(context);
+  public void onCreate() {
+    super.onCreate();
+    Log.i(TAG, "Service created");
+    mConnectivityReceiver = new ConnectivityReceiver(this);
   }
+
+
+
+  /**
+   * When the app's NetworkConnectionActivity is created, it starts this service. This is so that the
+   * activity and this service can communicate back and forth. See "setUiCallback()"
+   */
+  @Override
+  public int onStartCommand(Intent intent, int flags, int startId) {
+    Log.i(TAG, "onStartCommand");
+    return START_NOT_STICKY;
+  }
+
+  @Override
+  public boolean onStartJob(JobParameters params) {
+    Log.i(TAG, "onStartJob" + mConnectivityReceiver);
+    registerReceiver(mConnectivityReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+    return true;
+  }
+
+  @Override
+  public boolean onStopJob(JobParameters params) {
+    Log.i(TAG, "onStopJob");
+    unregisterReceiver(mConnectivityReceiver);
+    return true;
+  }
+
+  @Override
+  public void onNetworkConnectionChanged(boolean isConnected) {
+    Log.d(TAG, "onNetworkConnectionChanged");
+    pullMsgFromServer(this);
+    /*String message = isConnected ? "Good! Connected to Internet" : "Sorry! Not connected to internet";
+    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();*/
+
+  }
+
 
   public void pullMsgFromServer(Context context) {
     boolean AlarmActiveFlag = true;
