@@ -99,7 +99,7 @@ private static final String DEFAULT_LOGO = "ic_launcher";
   }
 
   public static Bitmap getDefaultChannelImg(Context context) {
-    return BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(DEFAULT_LOGO, "drawable", context.getPackageName()));
+    return BitmapFactory.decodeResource(context.getResources(), context.getResources().getIdentifier(DEFAULT_LOGO, "mipmap", context.getPackageName()));
   }
 
   public static void showMessageOKCancel(Activity activity, String title, String message, DialogInterface.OnClickListener clickListener) {
