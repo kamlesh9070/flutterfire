@@ -518,8 +518,9 @@ public class AKonnectNotificationManager {
   }
 
   private boolean isAnyEqualTo(String title) {
-    return true;
-    //return title.equalsIgnoreCase(nDTO.getEngTitle()) || title.equalsIgnoreCase(nDTO.getGujTitle()) || title.equalsIgnoreCase(nDTO.getHindiTitle());
+    if (nDTO != null && nDTO.isLiveNotification())
+      return true;
+    return title.equalsIgnoreCase(nDTO.getEngTitle()) || title.equalsIgnoreCase(nDTO.getGujTitle()) || title.equalsIgnoreCase(nDTO.getHindiTitle());
   }
 
   private CharSequence[] getTitlesAfterRecallUpdate(CharSequence[] charSequences, List<String> msgIdList) {
