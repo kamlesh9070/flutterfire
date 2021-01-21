@@ -35,6 +35,9 @@ public class NotificationDTO {
   @SerializedName("recalled_message_id")
   int recalledMessageId;
 
+  @SerializedName("live_notification")
+  String liveNotification;
+
   @Override
   public String toString() {
     return "NotificationDTO{" +
@@ -48,6 +51,7 @@ public class NotificationDTO {
       ", channelId='" + channelId + '\'' +
       ", avatarUrl='" + avatarUrl + '\'' +
       ", recalledMessageId=" + recalledMessageId +
+      ", liveNotification='" + liveNotification + '\'' +
       '}';
   }
 
@@ -135,6 +139,14 @@ public class NotificationDTO {
 
   public void setRecalledMessageId(int recalledMessageId) {
     this.recalledMessageId = recalledMessageId;
+  }
+
+  public boolean isLiveNotification() {
+    return !ApplicationUtility.isStrNullOrEmpty(liveNotification) && liveNotification.equalsIgnoreCase("true");
+  }
+
+  public void setLiveNotification(String liveNotification) {
+    this.liveNotification = liveNotification;
   }
 
   private void setTitle(Context context) {
