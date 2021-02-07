@@ -121,6 +121,7 @@ public class WebServiceCall {
 
         if(userProfile != null && userProfile.getSenderChannelList() != null && !userProfile.getSenderChannelList().isEmpty()) {
           pullNotificationDTO.setIsCoordinator(1);
+          pullNotificationDTO.setProfileHash("");
         }
         else {
           pullNotificationDTO.setIsCoordinator(0);
