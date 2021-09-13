@@ -13,6 +13,7 @@ import org.dadabhagwan.AKonnect.dbo.model.NotificationLogTO;
 
 public class AKDBHelper extends SQLiteOpenHelper {
 
+  //Test commit
   protected static final String TAG = "AKonnect[AKDBHelper]";
 
   // Database Version
