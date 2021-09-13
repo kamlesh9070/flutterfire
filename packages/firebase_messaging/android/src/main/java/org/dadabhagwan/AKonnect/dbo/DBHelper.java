@@ -20,7 +20,7 @@ public class DBHelper extends SQLiteOpenHelper {
   protected static final String TAG = "AKonnect[DBHelper]";
 
   // Database Version
-  private static final int DATABASE_VERSION = 1;
+  private static final int DATABASE_VERSION = 2;
 
   // Database Name
   private static final String DATABASE_NAME = "notification_db";
