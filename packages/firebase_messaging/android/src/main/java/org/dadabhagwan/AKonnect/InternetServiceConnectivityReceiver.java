@@ -4,18 +4,10 @@ package org.dadabhagwan.AKonnect;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.SystemClock;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.dto.InitAppResponse;
-import org.dadabhagwan.AKonnect.dto.NotificationDTO;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class InternetServiceConnectivityReceiver extends BroadcastReceiver implements AsyncResponseListner {
 
@@ -70,9 +62,9 @@ public class InternetServiceConnectivityReceiver extends BroadcastReceiver imple
 
   //Here you will receive the result fired from async class of onPostExecute(result) method.
   @Override
-  public void onPostExecute(String output) {
+  public void onPostExecute(String request, String output) {
     try {
-      ApplicationUtility.handlePullNotificationRes(context, output);
+      ApplicationUtility.handlePullNotificationRes(context, request, output);
       AlarmSetupReceiver.setAlarm(context);
     } catch (Exception e) {
       Log.e(TAG, "processFinish output Exception:: " + e.getMessage());

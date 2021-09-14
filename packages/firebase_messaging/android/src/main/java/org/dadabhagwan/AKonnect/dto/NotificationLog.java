@@ -44,6 +44,11 @@ public class NotificationLog {
   @SerializedName("push_type")
   String pushType;
 
+  @SerializedName("last_message")
+  int lastMessageId;
+
+  @SerializedName("is_coordinator")
+  int isCoordinator;
 
   public void setFieldsFromDTO(DeviceDetail deviceDetail) {
     if(deviceDetail != null) {
@@ -71,6 +76,11 @@ public class NotificationLog {
       channelName = ndto.getChannelName();
       status = WSConstant.STATUS_NOTIFIED;
       this.pushType = pushType;
+      if(ndto.getPullNotificationDTO() != null) {
+        PullNotificationDTO pDTO = ndto.getPullNotificationDTO();
+        this.lastMessageId = pDTO.getLastMessageId();
+        this.isCoordinator = pDTO.getIsCoordinator();
+      }
     }
   }
 

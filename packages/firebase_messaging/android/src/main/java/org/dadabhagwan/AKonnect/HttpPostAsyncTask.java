@@ -100,7 +100,7 @@ public class HttpPostAsyncTask extends AsyncTask<String, Void, String> {
   protected void onPostExecute(String result) {
     Log.d(TAG, "Response: " + result);
     if (delegate != null)
-      delegate.onPostExecute(result);
+      delegate.onPostExecute(postData, result);
   }
 
 

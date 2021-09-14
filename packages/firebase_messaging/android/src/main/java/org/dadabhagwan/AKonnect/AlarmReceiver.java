@@ -54,9 +54,9 @@ public class AlarmReceiver extends BroadcastReceiver implements AsyncResponseLis
   }
 
   @Override
-  public void onPostExecute(String out) {
+  public void onPostExecute(String request, String out) {
     try {
-      ApplicationUtility.handlePullNotificationRes(context, out);
+      ApplicationUtility.handlePullNotificationRes(context, request, out);
       AlarmSetupReceiver.setAlarm(context);
     } catch (Exception e) {
       Log.e(TAG, "processFinish output Exception:: " + e.getMessage());

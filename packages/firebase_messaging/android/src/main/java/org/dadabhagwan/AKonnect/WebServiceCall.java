@@ -96,7 +96,7 @@ public class WebServiceCall {
       maxMsgId = Math.max(lastNotificationId, lastMsgIdFromInbox);
 
       //Temp
-      //maxMsgId = 24332;
+//      maxMsgId = 23553;
       Log.d(TAG, "lastNotificationId : " + lastNotificationId + ", lastMsgIdFromInbox: " + lastMsgIdFromInbox);
       UserRegData userRegData = SharedPreferencesTask.getUserRegData(context);
       UserProfile userProfile = SharedPreferencesTask.getUserProfile(context);

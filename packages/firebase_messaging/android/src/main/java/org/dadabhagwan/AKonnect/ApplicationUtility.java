@@ -15,12 +15,13 @@ import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-
+import com.google.gson.Gson;
 import org.dadabhagwan.AKonnect.constants.SharedPrefConstants;
 import org.dadabhagwan.AKonnect.constants.WSConstant;
 import org.dadabhagwan.AKonnect.dto.ChannelDetails;
 import org.dadabhagwan.AKonnect.dto.NotificationDTO;
 import org.dadabhagwan.AKonnect.dto.NotificationPullRes;
+import org.dadabhagwan.AKonnect.dto.PullNotificationDTO;
 import org.dadabhagwan.AKonnect.dto.ServerResponseDTO;
 import org.dadabhagwan.AKonnect.utils.WSUtils;
 
@@ -202,9 +203,18 @@ private static final String DEFAULT_LOGO = "ic_launcher";
     return connected;
   }
 
-  public static void handlePullNotificationRes(Context context, String response) {
+  public static void handlePullNotificationRes(Context context, String request, String response) {
     try {
       Log.d(TAG, "handlePullNotificationRes response:" + response);
+      PullNotificationDTO pullNotificationDTO = null;
+      if(!ApplicationUtility.isStrNullOrEmpty(request)) {
+        try {
+          pullNotificationDTO = new Gson().fromJson(request, PullNotificationDTO.class);
+        } catch (Exception e) {
+          Log.e(TAG, "processFinish output Exception:: " + e.getMessage());
+          e.printStackTrace();
+        }
+      }
       ServerResponseDTO<NotificationPullRes> serverResponseDTO = WSUtils.getResponse(response, NotificationPullRes.class);
       if (serverResponseDTO != null && serverResponseDTO.isSuccess()) {
         NotificationPullRes notificationPullRes = serverResponseDTO.getData();
@@ -212,7 +222,7 @@ private static final String DEFAULT_LOGO = "ic_launcher";
         if (notificationPullRes != null && notificationPullRes.isProcessFlag()) {
           List<NotificationDTO> notificationDTOs = notificationPullRes.getNotificationDTOList();
           if (notificationDTOs != null && !notificationDTOs.isEmpty())
-            ApplicationUtility.generateNotificationsForFetchMessages(context, serverResponseDTO.getData().getNotificationDTOList());
+            ApplicationUtility.generateNotificationsForFetchMessages(context, pullNotificationDTO, serverResponseDTO.getData().getNotificationDTOList());
           if(!isStrNullOrEmpty(notificationPullRes.getProfile_hash()))
             SharedPreferencesTask.saveFlutterSharedPrefString(context, SharedPrefConstants.FLUTTER_PROFILEHASH, notificationPullRes.getProfile_hash());
           if(!isStrNullOrEmpty(notificationPullRes.getToken()))
@@ -225,10 +235,11 @@ private static final String DEFAULT_LOGO = "ic_launcher";
     }
   }
 
-  public static boolean generateNotificationsForFetchMessages(Context context, List<NotificationDTO> notificationDTOList) {
+  public static boolean generateNotificationsForFetchMessages(Context context, PullNotificationDTO pullNotificationDTO, List<NotificationDTO> notificationDTOList) {
     boolean isSucceeded = true;
     try {
       for (NotificationDTO notificationDTO : notificationDTOList) {
+        notificationDTO.setPullNotificationDTO(pullNotificationDTO);
         new AKonnectNotificationManager(context, notificationDTO).sendStackNotification(WSConstant.PUSHTYPE_PULL); // 3 - Notifications fetched from server
       }
     } catch (Exception e) {

@@ -6,5 +6,5 @@ package org.dadabhagwan.AKonnect;
 
 public interface AsyncResponseListner {
 
-  public void onPostExecute(String output);
+  public void onPostExecute(String request, String output);
 }

@@ -38,6 +38,8 @@ public class NotificationDTO {
   @SerializedName("live_notification")
   String liveNotification;
 
+  PullNotificationDTO pullNotificationDTO;
+
   @Override
   public String toString() {
     return "NotificationDTO{" +
@@ -53,6 +55,14 @@ public class NotificationDTO {
       ", recalledMessageId=" + recalledMessageId +
       ", liveNotification='" + liveNotification + '\'' +
       '}';
+  }
+
+  public PullNotificationDTO getPullNotificationDTO() {
+    return pullNotificationDTO;
+  }
+
+  public void setPullNotificationDTO(PullNotificationDTO pullNotificationDTO) {
+    this.pullNotificationDTO = pullNotificationDTO;
   }
 
   public boolean isReacall() {

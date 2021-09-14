@@ -102,7 +102,7 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    */
   @Override
   public void onMessageReceived(final RemoteMessage remoteMessage) {
-    Log.i(TAG, "$$$$$$$$$$$$$ Changed KK New From Github");
+    Log.i(TAG, "$$$$$$$$$$$$$ Changed For Log lastmsgid");
     MyTestClass.testMsg();
     sendAkonnectNotification(remoteMessage);
     // If application is running in the foreground use local broadcast to handle message.
