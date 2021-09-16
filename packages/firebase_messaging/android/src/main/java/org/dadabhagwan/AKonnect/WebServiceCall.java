@@ -91,7 +91,8 @@ public class WebServiceCall {
       int lastNotificationId = 0;
       PullNotificationDTO pullNotificationDTO = new PullNotificationDTO();
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
-      lastNotificationId = sharedPreferencesTask.getInt(SharedPrefConstants.LAST_MSGID_FROM_NOTIFICATION);
+//      lastNotificationId = sharedPreferencesTask.getInt(SharedPrefConstants.LAST_MSGID_FROM_NOTIFICATION);
+      lastNotificationId = DBHelper.getInstance(context).getMaxMsgIdFromNotificationMaster();
       lastMsgIdFromInbox = AKDBHelper.getInstance(context).getMaxMsgIdFromMessageMaster();
       maxMsgId = Math.max(lastNotificationId, lastMsgIdFromInbox);
 

@@ -2,6 +2,7 @@ package org.dadabhagwan.AKonnect.dbo.model;
 
 public class NotificationLogTO {
   public static final String TABLE_NAME = "NotificationMaster";
+  public static final String LIVE_TABLE_NAME = "LiveNotificationMaster";
   public static final String COLUMN_ID = "MsgId";
   public static final String COLUMN_TIMESTAMP = "timestamp";
 
@@ -15,6 +16,13 @@ public class NotificationLogTO {
       + COLUMN_ID + " INTEGER PRIMARY KEY,"
       + COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP"
       + ")";
+
+  public static String getCreateTableQuery(String tableName) {
+    return "CREATE TABLE " + tableName + "("
+      + COLUMN_ID + " INTEGER PRIMARY KEY,"
+      + COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP"
+      + ")";
+  }
 
   public NotificationLogTO() {
   }

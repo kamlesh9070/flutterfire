@@ -145,7 +145,21 @@ public class NotificationLog {
     this.device = device;
   }
 
+  public int getLastMessageId() {
+    return lastMessageId;
+  }
 
+  public void setLastMessageId(int lastMessageId) {
+    this.lastMessageId = lastMessageId;
+  }
+
+  public int getIsCoordinator() {
+    return isCoordinator;
+  }
+
+  public void setIsCoordinator(int isCoordinator) {
+    this.isCoordinator = isCoordinator;
+  }
 
   public long getTimestamp() {
     return timestamp;

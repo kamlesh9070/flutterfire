@@ -92,7 +92,7 @@ private static final String DEFAULT_LOGO = "ic_launcher";
         }
       }
     } catch (Exception e) {
-      Log.e(TAG, "Error while getting sender Image, e:" + e.getMessage(), e);
+      Log.e(TAG, "Error while getting sender Image, channelId:"+ channelId + "\te:" + e.getMessage(), e);
     }
     if (channelImg == null)
       channelImg = getDefaultChannelImg(context);

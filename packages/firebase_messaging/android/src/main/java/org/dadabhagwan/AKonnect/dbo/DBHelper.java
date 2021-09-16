@@ -13,6 +13,7 @@ import java.util.List;
 import java.lang.Exception;
 
 import org.dadabhagwan.AKonnect.dbo.model.NotificationLogTO;
+import org.dadabhagwan.AKonnect.dto.NotificationLog;
 
 
 public class DBHelper extends SQLiteOpenHelper {
@@ -20,7 +21,7 @@ public class DBHelper extends SQLiteOpenHelper {
   protected static final String TAG = "AKonnect[DBHelper]";
 
   // Database Version
-  private static final int DATABASE_VERSION = 1;
+  private static final int DATABASE_VERSION = 2;
 
   // Database Name
   private static final String DATABASE_NAME = "notification_db";
@@ -50,21 +51,32 @@ public class DBHelper extends SQLiteOpenHelper {
   // Creating Tables
   @Override
   public void onCreate(SQLiteDatabase db) {
+    Log.d(TAG, " inside onCreate : ");
     // create notes table
-    db.execSQL(NotificationLogTO.CREATE_TABLE);
+    db.execSQL(NotificationLogTO.getCreateTableQuery(NotificationLogTO.TABLE_NAME));
+    db.execSQL(NotificationLogTO.getCreateTableQuery(NotificationLogTO.LIVE_TABLE_NAME));
   }
 
   // Upgrading database
   @Override
   public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    Log.d(TAG, " inside onUpgrade : oldVersion:" + oldVersion + "\tnewVersion:" + newVersion);
     // Drop older table if existed
-    db.execSQL("DROP TABLE IF EXISTS " + NotificationLogTO.TABLE_NAME);
+//    db.execSQL("DROP TABLE IF EXISTS " + NotificationLogTO.TABLE_NAME);
 
     // Create tables again
-    onCreate(db);
+//    onCreate(db);
+      db.execSQL(NotificationLogTO.getCreateTableQuery(NotificationLogTO.LIVE_TABLE_NAME));
   }
 
-  public int insertNotificationLog(int msgId) {
+  public int insertNotificationLog(int msgId, boolean isLive) {
+    if (isLive)
+      return insertNotificationLog(msgId, NotificationLogTO.LIVE_TABLE_NAME);
+    else
+      return insertNotificationLog(msgId, NotificationLogTO.TABLE_NAME);
+  }
+
+  public int insertNotificationLog(int msgId, String tableName) {
     int isMsgInserted = 1;
     Log.d(TAG, " inside insertNotificationLog : ");
     SQLiteDatabase db = null;
@@ -77,7 +89,7 @@ public class DBHelper extends SQLiteOpenHelper {
       values.put(NotificationLogTO.COLUMN_ID, msgId);
 
       // insert row
-      long id = db.insert(NotificationLogTO.TABLE_NAME, null, values);
+      long id = db.insert(tableName, null, values);
     } catch (Exception e) {
       Log.e(TAG, " Exception insertNotificationLog : " + e.getMessage());
       isMsgInserted = 0;
@@ -91,13 +103,16 @@ public class DBHelper extends SQLiteOpenHelper {
     return isMsgInserted;
   }
 
-  public boolean getNotificationLogByMsgId(long id) {
+  public boolean getNotificationLogByMsgId(long id, boolean isLive) {
     boolean isMsgIdExist = false;
     Cursor cursor = null;
+    String tableName = NotificationLogTO.TABLE_NAME;
+    if (isLive)
+      tableName = NotificationLogTO.LIVE_TABLE_NAME;
     try {
       // get readable database as we are not inserting anything
       SQLiteDatabase db = this.getReadableDatabase();
-      String getMsgIdQuery = "SELECT 1 FROM " + NotificationLogTO.TABLE_NAME + " WHERE " + NotificationLogTO.COLUMN_ID + " = " + id;
+      String getMsgIdQuery = "SELECT 1 FROM " + tableName + " WHERE " + NotificationLogTO.COLUMN_ID + " = " + id;
       cursor = db.rawQuery(getMsgIdQuery, null);
 
       if (cursor != null && cursor.getCount() > 0) {

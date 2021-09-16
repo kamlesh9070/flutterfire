@@ -93,7 +93,7 @@ public class AKonnectNotificationManager {
 
       if (AlarmActiveFlag) {
         dbHelper = DBHelper.getInstance(context);
-        isMsgIdExist = dbHelper.getNotificationLogByMsgId(nDTO.getMessageId());
+        isMsgIdExist = dbHelper.getNotificationLogByMsgId(nDTO.getMessageId(), nDTO.isLiveNotification());
       }
       //Temp
       //if(true) {
@@ -151,7 +151,7 @@ public class AKonnectNotificationManager {
         // Insert data into NotificationMaster
         synchronized (this) {
           if (AlarmActiveFlag) {
-            dbHelper.insertNotificationLog(nDTO.getMessageId());
+            dbHelper.insertNotificationLog(nDTO.getMessageId(), nDTO.isLiveNotification());
             try {
               sharedPreferencesTask.saveInt(SharedPrefConstants.LAST_MSGID_FROM_NOTIFICATION, nDTO.getMessageId());
             } catch (Exception e) {
