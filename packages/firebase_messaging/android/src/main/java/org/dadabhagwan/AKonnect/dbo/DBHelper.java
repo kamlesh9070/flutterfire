@@ -66,6 +66,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // Create tables again
 //    onCreate(db);
+    if(oldVersion < 2)
       db.execSQL(NotificationLogTO.getCreateTableQuery(NotificationLogTO.LIVE_TABLE_NAME));
   }
 
