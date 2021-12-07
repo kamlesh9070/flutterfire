@@ -4,23 +4,33 @@
 
 import 'dart:async';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_analytics/observer.dart';
 
 import 'tabs_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MyApp());
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: 'AIzaSyAgUhHU8wSJgO5MVNy95tMT07NEjzMOfz0',
+      authDomain: 'react-native-firebase-testing.firebaseapp.com',
+      databaseURL: 'https://react-native-firebase-testing.firebaseio.com',
+      projectId: 'react-native-firebase-testing',
+      storageBucket: 'react-native-firebase-testing.appspot.com',
+      messagingSenderId: '448618578101',
+      appId: '1:448618578101:web:772d484dc9eb15e9ac3efc',
+      measurementId: 'G-0N1G9FLDZE',
+    ),
+  );
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  static FirebaseAnalytics analytics = FirebaseAnalytics();
-  static FirebaseAnalyticsObserver observer =
-      FirebaseAnalyticsObserver(analytics: analytics);
+  const MyApp({Key? key}) : super(key: key);
+
+  static FirebaseAnalytics analytics = FirebaseAnalytics.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -29,33 +39,29 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      navigatorObservers: <NavigatorObserver>[observer],
       home: MyHomePage(
         title: 'Firebase Analytics Demo',
         analytics: analytics,
-        observer: observer,
       ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title, this.analytics, this.observer})
-      : super(key: key);
+  MyHomePage({
+    Key? key,
+    required this.title,
+    required this.analytics,
+  }) : super(key: key);
 
   final String title;
   final FirebaseAnalytics analytics;
-  final FirebaseAnalyticsObserver observer;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState(analytics, observer);
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  _MyHomePageState(this.analytics, this.observer);
-
-  final FirebaseAnalyticsObserver observer;
-  final FirebaseAnalytics analytics;
   String _message = '';
 
   void setMessage(String message) {
@@ -65,26 +71,28 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _sendAnalyticsEvent() async {
-    await analytics.logEvent(
+    await widget.analytics.logEvent(
       name: 'test_event',
       parameters: <String, dynamic>{
         'string': 'string',
         'int': 42,
         'long': 12345678910,
         'double': 42.0,
-        'bool': true,
+        // Only strings and numbers (ints & doubles) are supported for GA custom event parameters:
+        // https://developers.google.com/analytics/devguides/collection/analyticsjs/custom-dims-mets#overview
+        'bool': true.toString(),
       },
     );
     setMessage('logEvent succeeded');
   }
 
   Future<void> _testSetUserId() async {
-    await analytics.setUserId('some-user');
+    await widget.analytics.setUserId(id: 'some-user');
     setMessage('setUserId succeeded');
   }
 
   Future<void> _testSetCurrentScreen() async {
-    await analytics.setCurrentScreen(
+    await widget.analytics.setCurrentScreen(
       screenName: 'Analytics Demo',
       screenClassOverride: 'AnalyticsDemo',
     );
@@ -92,124 +100,98 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _testSetAnalyticsCollectionEnabled() async {
-    await analytics.setAnalyticsCollectionEnabled(false);
-    await analytics.setAnalyticsCollectionEnabled(true);
+    await widget.analytics.setAnalyticsCollectionEnabled(false);
+    await widget.analytics.setAnalyticsCollectionEnabled(true);
     setMessage('setAnalyticsCollectionEnabled succeeded');
   }
 
   Future<void> _testSetSessionTimeoutDuration() async {
-    await analytics.android?.setSessionTimeoutDuration(2000000);
+    await widget.analytics
+        .setSessionTimeoutDuration(const Duration(milliseconds: 20000));
     setMessage('setSessionTimeoutDuration succeeded');
   }
 
   Future<void> _testSetUserProperty() async {
-    await analytics.setUserProperty(name: 'regular', value: 'indeed');
+    await widget.analytics.setUserProperty(name: 'regular', value: 'indeed');
     setMessage('setUserProperty succeeded');
   }
 
+  AnalyticsEventItem itemCreator() {
+    return AnalyticsEventItem(
+      affiliation: 'affil',
+      coupon: 'coup',
+      creativeName: 'creativeName',
+      creativeSlot: 'creativeSlot',
+      discount: 2.22,
+      index: 3,
+      itemBrand: 'itemBrand',
+      itemCategory: 'itemCategory',
+      itemCategory2: 'itemCategory2',
+      itemCategory3: 'itemCategory3',
+      itemCategory4: 'itemCategory4',
+      itemCategory5: 'itemCategory5',
+      itemId: 'itemId',
+      itemListId: 'itemListId',
+      itemListName: 'itemListName',
+      itemName: 'itemName',
+      itemVariant: 'itemVariant',
+      locationId: 'locationId',
+      price: 9.99,
+      currency: 'USD',
+      promotionId: 'promotionId',
+      promotionName: 'promotionName',
+      quantity: 1,
+    );
+  }
+
   Future<void> _testAllEventTypes() async {
-    await analytics.logAddPaymentInfo();
-    await analytics.logAddToCart(
+    await widget.analytics.logAddPaymentInfo();
+    await widget.analytics.logAddToCart(
       currency: 'USD',
-      value: 123.0,
-      itemId: 'test item id',
-      itemName: 'test item name',
-      itemCategory: 'test item category',
-      quantity: 5,
-      price: 24.0,
-      origin: 'test origin',
-      itemLocationId: 'test location id',
-      destination: 'test destination',
-      startDate: '2015-09-14',
-      endDate: '2015-09-17',
+      value: 123,
+      items: [itemCreator(), itemCreator()],
     );
-    await analytics.logAddToWishlist(
-      itemId: 'test item id',
-      itemName: 'test item name',
-      itemCategory: 'test item category',
-      quantity: 5,
-      price: 24.0,
-      value: 123.0,
+    await widget.analytics.logAddToWishlist();
+    await widget.analytics.logAppOpen();
+    await widget.analytics.logBeginCheckout(
+      value: 123,
       currency: 'USD',
-      itemLocationId: 'test location id',
+      items: [itemCreator(), itemCreator()],
     );
-    await analytics.logAppOpen();
-    await analytics.logBeginCheckout(
-      value: 123.0,
-      currency: 'USD',
-      transactionId: 'test tx id',
-      numberOfNights: 2,
-      numberOfRooms: 3,
-      numberOfPassengers: 4,
-      origin: 'test origin',
-      destination: 'test destination',
-      startDate: '2015-09-14',
-      endDate: '2015-09-17',
-      travelClass: 'test travel class',
+    await widget.analytics.logCampaignDetails(
+      source: 'source',
+      medium: 'medium',
+      campaign: 'campaign',
+      term: 'term',
+      content: 'content',
+      aclid: 'aclid',
+      cp1: 'cp1',
     );
-    await analytics.logCampaignDetails(
-      source: 'test source',
-      medium: 'test medium',
-      campaign: 'test campaign',
-      term: 'test term',
-      content: 'test content',
-      aclid: 'test aclid',
-      cp1: 'test cp1',
-    );
-    await analytics.logEarnVirtualCurrency(
+    await widget.analytics.logEarnVirtualCurrency(
       virtualCurrencyName: 'bitcoin',
       value: 345.66,
     );
-    await analytics.logEcommercePurchase(
-      currency: 'USD',
-      value: 432.45,
-      transactionId: 'test tx id',
-      tax: 3.45,
-      shipping: 5.67,
-      coupon: 'test coupon',
-      location: 'test location',
-      numberOfNights: 3,
-      numberOfRooms: 4,
-      numberOfPassengers: 5,
-      origin: 'test origin',
-      destination: 'test destination',
-      startDate: '2015-09-13',
-      endDate: '2015-09-14',
-      travelClass: 'test travel class',
-    );
-    await analytics.logGenerateLead(
+
+    await widget.analytics.logGenerateLead(
       currency: 'USD',
       value: 123.45,
     );
-    await analytics.logJoinGroup(
+    await widget.analytics.logJoinGroup(
       groupId: 'test group id',
     );
-    await analytics.logLevelUp(
+    await widget.analytics.logLevelUp(
       level: 5,
       character: 'witch doctor',
     );
-    await analytics.logLogin();
-    await analytics.logPostScore(
+    await widget.analytics.logLogin(loginMethod: 'sign up');
+    await widget.analytics.logPostScore(
       score: 1000000,
       level: 70,
       character: 'tiefling cleric',
     );
-    await analytics.logPresentOffer(
-      itemId: 'test item id',
-      itemName: 'test item name',
-      itemCategory: 'test item category',
-      quantity: 6,
-      price: 3.45,
-      value: 67.8,
-      currency: 'USD',
-      itemLocationId: 'test item location id',
-    );
-    await analytics.logPurchaseRefund(
-      currency: 'USD',
-      value: 45.67,
-      transactionId: 'test tx id',
-    );
-    await analytics.logSearch(
+    await widget.analytics
+        .logPurchase(currency: 'USD', transactionId: 'transaction-id');
+    await widget.analytics.logSearch(
       searchTerm: 'hotel',
       numberOfNights: 2,
       numberOfRooms: 1,
@@ -220,49 +202,69 @@ class _MyHomePageState extends State<MyHomePage> {
       endDate: '2015-09-16',
       travelClass: 'test travel class',
     );
-    await analytics.logSelectContent(
+    await widget.analytics.logSelectContent(
       contentType: 'test content type',
       itemId: 'test item id',
     );
-    await analytics.logShare(
-        contentType: 'test content type',
-        itemId: 'test item id',
-        method: 'facebook');
-    await analytics.logSignUp(
+    await widget.analytics.logSelectPromotion(
+      creativeName: 'promotion name',
+      creativeSlot: 'promotion slot',
+      items: [itemCreator()],
+      locationId: 'United States',
+    );
+    await widget.analytics.logSelectItem(
+      items: [itemCreator(), itemCreator()],
+      itemListName: 't-shirt',
+      itemListId: '1234',
+    );
+    await widget.analytics.logScreenView(
+      screenName: 'tabs-page',
+    );
+    await widget.analytics.logViewCart(
+      currency: 'USD',
+      value: 123,
+      items: [itemCreator(), itemCreator()],
+    );
+    await widget.analytics.logShare(
+      contentType: 'test content type',
+      itemId: 'test item id',
+      method: 'facebook',
+    );
+    await widget.analytics.logSignUp(
       signUpMethod: 'test sign up method',
     );
-    await analytics.logSpendVirtualCurrency(
+    await widget.analytics.logSpendVirtualCurrency(
       itemName: 'test item name',
       virtualCurrencyName: 'bitcoin',
       value: 34,
     );
-    await analytics.logTutorialBegin();
-    await analytics.logTutorialComplete();
-    await analytics.logUnlockAchievement(id: 'all Firebase API covered');
-    await analytics.logViewItem(
-      itemId: 'test item id',
-      itemName: 'test item name',
-      itemCategory: 'test item category',
-      itemLocationId: 'test item location id',
-      price: 3.45,
-      quantity: 6,
+    await widget.analytics.logViewPromotion(
+      creativeName: 'promotion name',
+      creativeSlot: 'promotion slot',
+      items: [itemCreator()],
+      locationId: 'United States',
+      promotionId: '1234',
+      promotionName: 'big sale',
+    );
+    await widget.analytics.logRefund(
       currency: 'USD',
-      value: 67.8,
-      flightNumber: 'test flight number',
-      numberOfPassengers: 3,
-      numberOfRooms: 1,
-      numberOfNights: 2,
-      origin: 'test origin',
-      destination: 'test destination',
-      startDate: '2015-09-14',
-      endDate: '2015-09-15',
-      searchTerm: 'test search term',
-      travelClass: 'test travel class',
+      value: 123,
+      items: [itemCreator(), itemCreator()],
     );
-    await analytics.logViewItemList(
-      itemCategory: 'test item category',
+    await widget.analytics.logTutorialBegin();
+    await widget.analytics.logTutorialComplete();
+    await widget.analytics.logUnlockAchievement(id: 'all Firebase API covered');
+    await widget.analytics.logViewItem(
+      currency: 'usd',
+      value: 1000,
+      items: [itemCreator()],
     );
-    await analytics.logViewSearchResults(
+    await widget.analytics.logViewItemList(
+      itemListId: 't-shirt-4321',
+      itemListName: 'green t-shirt',
+      items: [itemCreator()],
+    );
+    await widget.analytics.logViewSearchResults(
       searchTerm: 'test search term',
     );
     setMessage('All standard events logged successfully');
@@ -277,46 +279,52 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Column(
         children: <Widget>[
           MaterialButton(
-            child: const Text('Test logEvent'),
             onPressed: _sendAnalyticsEvent,
+            child: const Text('Test logEvent'),
           ),
           MaterialButton(
-            child: const Text('Test standard event types'),
             onPressed: _testAllEventTypes,
+            child: const Text('Test standard event types'),
           ),
           MaterialButton(
-            child: const Text('Test setUserId'),
             onPressed: _testSetUserId,
+            child: const Text('Test setUserId'),
           ),
           MaterialButton(
-            child: const Text('Test setCurrentScreen'),
             onPressed: _testSetCurrentScreen,
+            child: const Text('Test setCurrentScreen'),
           ),
           MaterialButton(
-            child: const Text('Test setAnalyticsCollectionEnabled'),
             onPressed: _testSetAnalyticsCollectionEnabled,
+            child: const Text('Test setAnalyticsCollectionEnabled'),
           ),
           MaterialButton(
-            child: const Text('Test setSessionTimeoutDuration'),
             onPressed: _testSetSessionTimeoutDuration,
+            child: const Text('Test setSessionTimeoutDuration'),
           ),
           MaterialButton(
-            child: const Text('Test setUserProperty'),
             onPressed: _testSetUserProperty,
+            child: const Text('Test setUserProperty'),
           ),
-          Text(_message,
-              style: const TextStyle(color: Color.fromARGB(255, 0, 155, 0))),
+          Text(
+            _message,
+            style: const TextStyle(color: Color.fromARGB(255, 0, 155, 0)),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.tab),
-          onPressed: () {
-            Navigator.of(context).push(MaterialPageRoute<TabsPage>(
-                settings: const RouteSettings(name: TabsPage.routeName),
-                builder: (BuildContext context) {
-                  return TabsPage(observer);
-                }));
-          }),
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<TabsPage>(
+              settings: const RouteSettings(name: TabsPage.routeName),
+              builder: (BuildContext context) {
+                return const TabsPage();
+              },
+            ),
+          );
+        },
+        child: const Icon(Icons.tab),
+      ),
     );
   }
 }

@@ -9,40 +9,51 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 void runTimestampTests() {
   group('$Timestamp', () {
-    FirebaseFirestore firestore;
+    late FirebaseFirestore /*?*/ firestore;
 
     setUpAll(() async {
       firestore = FirebaseFirestore.instance;
     });
 
-    Future<DocumentReference> initializeTest(String path) async {
+    Future<DocumentReference<Map<String, dynamic>>> initializeTest(
+      String path,
+    ) async {
       String prefixedPath = 'flutter-tests/$path';
       await firestore.doc(prefixedPath).delete();
       return firestore.doc(prefixedPath);
     }
 
     test('sets a $Timestamp & returns one', () async {
-      DocumentReference doc = await initializeTest('timestamp');
-      DateTime date = DateTime.utc(3000, 01, 01);
+      DocumentReference<Map<String, dynamic>> doc =
+          await initializeTest('timestamp');
+      DateTime date = DateTime.utc(3000);
 
       await doc.set({'foo': Timestamp.fromDate(date)});
-      DocumentSnapshot snapshot = await doc.get();
-      Timestamp timestamp = snapshot.data()['foo'];
+
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await doc.get();
+      Timestamp timestamp = snapshot.data()!['foo'];
       expect(timestamp, isA<Timestamp>());
-      expect(timestamp.millisecondsSinceEpoch,
-          equals(date.millisecondsSinceEpoch));
+      expect(
+        timestamp.millisecondsSinceEpoch,
+        equals(date.millisecondsSinceEpoch),
+      );
     });
 
     test('updates a $Timestamp & returns', () async {
-      DocumentReference doc = await initializeTest('geo-point-update');
+      DocumentReference<Map<String, dynamic>> doc =
+          await initializeTest('geo-point-update');
       DateTime date = DateTime.utc(3000, 01, 02);
-      await doc.set({'foo': DateTime.utc(3000, 01, 01)});
+
+      await doc.set({'foo': DateTime.utc(3000)});
       await doc.update({'foo': date});
-      DocumentSnapshot snapshot = await doc.get();
-      Timestamp timestamp = snapshot.data()['foo'];
+
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await doc.get();
+      Timestamp timestamp = snapshot.data()!['foo'];
       expect(timestamp, isA<Timestamp>());
-      expect(timestamp.millisecondsSinceEpoch,
-          equals(date.millisecondsSinceEpoch));
+      expect(
+        timestamp.millisecondsSinceEpoch,
+        equals(date.millisecondsSinceEpoch),
+      );
     });
   });
 }

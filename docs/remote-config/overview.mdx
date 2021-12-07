@@ -3,6 +3,10 @@ title: Remote Config
 sidebar_label: Overview
 ---
 
+:::caution
+This is a beta FlutterFire plugin and therefore is not yet production quality.
+:::
+
 ##  What does it do?
 
 Firebase Remote Config is a cloud service that lets you change the behavior and appearance of your app without requiring users to
@@ -15,7 +19,49 @@ apply them with a negligible impact on performance.
 
 ## Installation
 
+<Tabs
+groupId="legacy-or-nullsafe"
+defaultValue="legacy"
+values={[
+    { label: "Legacy", value: "legacy" },
+    { label: "Null safety", value: "null-safe" },
+]}
+>
+<TabItem value="legacy">
+</TabItem>
+<TabItem value="null-safe">
+
+Ensure you're using the Flutter `stable` channel:
+
+```bash
+$ flutter channel stable
+```
+
+If your app is mixing legacy and null-safe packages, use the `--no-sound-null-safety` flag:
+```bash
+$ flutter run --no-sound-null-safety
+```
+
+For legacy package imports, place the following ignore comment to hide Dart analyzer warnings:
+
+```dart
+// ignore: import_of_legacy_library_into_null_safe
+import 'package:firebase_remote_config/firebase_remote_config.dart';
+```
+</TabItem>
+</Tabs>
+
 ### 1. Add dependency
+
+<Tabs
+  groupId="legacy-or-nullsafe"
+  defaultValue="legacy"
+  values={[
+    { label: "Legacy", value: "legacy" },
+    { label: "Null safety", value: "null-safe" },
+  ]}
+>
+<TabItem value="legacy">
 
 ```yaml {5} title="pubspec.yaml"
 dependencies:
@@ -25,6 +71,22 @@ dependencies:
   firebase_remote_config: "^{{ plugins.firebase_remote_config }}"
 ```
 
+</TabItem>
+<TabItem value="null-safe">
+
+```yaml {5} title="pubspec.yaml"
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: "^{{ plugins.firebase_core_ns }}"
+  firebase_remote_config: "^{{ plugins.firebase_remote_config_ns }}"
+```
+
+</TabItem>
+</Tabs>
+
+
+
 ### 2. Download dependency
 
 ```
@@ -33,7 +95,17 @@ $ flutter pub get
 
 ### 3. (Web Only) Add the SDK
 
-> Web is currently not supported. See the [FlutterFire roadmap](https://github.com/FirebaseExtended/flutterfire/issues/2582).
+If using FlutterFire on the web, add the `firebase-remote-config` JavaScript SDK to your `index.html` file:
+
+```html {5} title="web/index.html"
+<html>
+  ...
+  <body>
+    <script src="https://www.gstatic.com/firebasejs/{{ web.firebase_cdn }}/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/{{ web.firebase_cdn }}/firebase-remote-config.js"></script>
+  </body>
+</html>
+```
 
 ### 4. Rebuild your app
 
@@ -47,6 +119,4 @@ $ flutter run
 
 Once installed, you're ready to start using Remote Config in your Flutter Project.
 
-> Additional documentation will be available once the Firebase Remote Config plugin update lands as part of the [FlutterFire roadmap](https://github.com/FirebaseExtended/flutterfire/issues/2582).
-
-<!-- View the [Usage documentation](usage.mdx) to get started. -->
+View the [Usage documentation](usage.mdx) to get started.

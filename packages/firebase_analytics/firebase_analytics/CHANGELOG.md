@@ -1,3 +1,182 @@
+## 9.0.0-dev.4
+
+ - **FEAT**: automatically inject Firebase JS SDKs (#7359).
+
+## 9.0.0-dev.3
+
+ - **FEAT**: add macOS support (#7313).
+
+## 9.0.0-dev.2
+
+ - **FEAT**: support initializing default `FirebaseApp` instances from Dart (#6549).
+
+## 9.0.0-dev.1
+
+ - Update a dependency to the latest release.
+
+## 9.0.0-dev.0
+
+> Note: This release has breaking changes.
+
+As part of our on-going work for [#6769](https://github.com/FirebaseExtended/flutterfire/issues/6979) this is our Firebase Analytics rework changes.
+
+Overall, Firebase Analytics has been heavily reworked to bring it inline with the federated plugin setup along with adding new features,
+documentation and updating unit and end-to-end tests.
+
+- **DEPRECATED**: `FirebaseAnalytics.android` namespace has been deprecated in favour of calling `setSessionTimeoutDuration()` directly: `FirebaseAnalytics.instance.setSessionTimeoutDuration(const Duration(milliseconds: 2000))`.
+- **DEPRECATED**: `logEcommercePurchase()` has been deprecated in favour of using `logPurchase()`.
+- **DEPRECATED**: `logPresentOffer()` has been deprecated in favour of using `logViewPromotion()`.
+- **DEPRECATED**: `logPurchaseRefund()` has been deprecated in favour of using `logRefund()`.
+- **DEPRECATED**: `logSetCheckoutOption()` has been deprecated.
+
+- **BREAKING** **FEAT**: update Android `minSdk` version to 19 as this is required by Firebase Android SDK `29.0.0` (#7298).
+- **BREAKING**: `FirebaseAnalyticsObserver()` class has been removed.
+- **BREAKING**: Constructing a `FirebaseAnalytics` instance is now deprecated, use `FirebaseAnalytics.instanceFor` (web only) or `FirebaseAnalytics.instance` instead.
+- **BREAKING**: `logAddPaymentInfo()` updated parameters to be logged in Analytics console.
+- **BREAKING**: `logAddToCart()` updated parameters to be logged in Analytics console.
+- **BREAKING**: `logAddToWishlist()` updated parameters to be logged in Analytics console.
+- **BREAKING**: `logBeginCheckout()` updated parameters to be logged in Analytics console.
+- **BREAKING**: `logRemoveFromCart()` updated parameters to be logged in Analytics console.
+- **BREAKING**: `logViewItem()` updated parameters to be logged in Analytics console.
+- **BREAKING**: `logViewItemList()` updated parameters to be logged in Analytics console.
+
+- **NEW**: `logAddShippingInfo()` added support for logging shipping information.
+- **NEW**: `logAdImpression()` added support for logging ad impression.
+- **NEW**: `logPurchase()` added support for logging a purchase.
+- **NEW**: `logRefund()` added support for logging a refund.
+- **NEW**: `logScreenView()` added support for logging a screen view.
+- **NEW**: `logSelectItem()` added support for logging a item that has been selected.
+- **NEW**: `logSelectPromotion()` added support for logging a promotion that has been selected.
+- **NEW**: `logViewCart()` added support for logging a view of the current cart.
+- **NEW**: `logViewPromotion()` added support for logging a view of the current promotion.
+- **NEW**: `setConsent()` added support for setting the applicable end user consent state (e.g., for device identifiers) for the app on this device.
+- **NEW**: `setDefaultEventParameters()` added support for setting default parameters that will be set on every event logged from the SDK, including automatic ones.
+
+## 8.3.4
+
+ - **REFACTOR**: remove deprecated Flutter Android v1 Embedding usages, including in example app (#7158).
+
+## 8.3.3
+
+ - **DOCS**: boolean parameters are not supported for GA custom definitions. (#7037).
+ - **CHORE**: update gradle for analytics example app (#7053).
+
+## 8.3.2
+
+ - **FIX**: Fix incorrect type name in error message (#6917).
+
+## 8.3.1
+
+ - Update a dependency to the latest release.
+
+## 8.3.0
+
+ - **STYLE**: enable additional lint rules (#6832).
+ - **FIX**: Use angle bracket import consistently when importing Firebase.h for iOS (#5891).
+ - **FEAT**: lower iOS & macOS deployment targets for relevant plugins (#6757).
+
+## 8.2.0
+
+ - **FEAT**: firebase_analytics plugin with AnalyticsWithoutAdIdSupport pod (#6046).
+ - **CHORE**: update v2 embedding support (#6506).
+ - **CHORE**: rm deprecated jcenter repository (#6431).
+
+## 8.1.2
+
+ - Update a dependency to the latest release.
+
+## 8.1.1
+
+ - Update a dependency to the latest release.
+
+## 8.1.0
+
+ - **FEAT**: upgrade Firebase JS SDK version to 8.6.1.
+ - **REFACTOR**: replace deprecated `setCurrentScreen` internal method usage with new `logEvent` name.
+ - **DOCS**: migrate firebase_analytics/example to null safety (#6111).
+
+## 8.0.4
+
+ - Update a dependency to the latest release.
+
+## 8.0.3
+
+ - **DOCS**: remove invalid codelabs link.
+
+## 8.0.2
+
+ - Update a dependency to the latest release.
+
+## 8.0.1
+
+ - **FIX**: null values for events (#5563).
+ - **CHORE**: update Web plugins to use Firebase JS SDK version 8.4.1 (#4464).
+
+## 8.0.0
+
+ - Graduate package to a stable release. See pre-releases prior to this version for changelog entries.
+
+## 8.0.0-dev.2
+
+ - **FIX**: support complex data structures like list and map on Android (#4394).
+
+## 8.0.0-dev.1
+
+ - **FIX**: remove screen_view from reservedEventNames (#4251).
+ - **CHORE**: add repository urls to pubspecs (#5542).
+
+## 8.0.0-dev.0
+
+> Note: This release has breaking changes.
+
+ - **DOCS**: remove incorrect ARCHS in ios examples (#5450).
+ - **CHORE**: bump min Dart SDK constraint to 2.12.0 (#5430).
+ - **CHORE**: publish packages (#5429).
+ - **CHORE**: publish packages.
+ - **BREAKING** **FEAT**: Migrate firebase_analytics to sound null safety (#5341).
+
+## 7.1.1
+
+ - Update a dependency to the latest release.
+
+## 7.1.0
+
+ - This version is not null-safe but has been created to allow compatibility with other null-safe FlutterFire packages such as `firebase_core`.
+
+## 7.0.0
+
+ - **BREAKING** **FEAT**: forward port to firebase-ios-sdk v7.3.0.
+   - Due to this SDK upgrade, iOS 10 is now the minimum supported version by FlutterFire. Please update your build target version.
+ - **FIX**: Add missing sdk version constraints inside pubspec.yaml (#4604).
+
+## 6.3.0
+
+ - **TEST**: Explicitly opt-out from null safety.
+ - **FEAT**: bump android `com.android.tools.build` & `'com.google.gms:google-services` versions (#4269).
+ - **CHORE**: publish packages.
+ - **CHORE**: bump gradle wrapper to 5.6.4 (#4158).
+
+## 6.2.0
+
+ - **FEAT**: bump compileSdkVersion to 29 (#3975).
+ - **FEAT**: bump `compileSdkVersion` to 29 in preparation for upcoming Play Store requirement.
+ - **CHORE**: publish packages.
+ - **CHORE**: publish packages.
+
+## 6.1.0
+
+ - **FEAT**: bump compileSdkVersion to 29 (#3975).
+ - **FEAT**: update Firebase iOS SDK version to 6.33.0 (from 6.26.0).
+
+## 6.0.2
+
+ - **FIX**: remove unused dart:async import (#3611).
+
+## 6.0.1
+
+ - **FIX**: local dependencies in example apps (#3319).
+ - **CHORE**: intellij cleanup (#3326).
+
 ## 6.0.0
 
 * Firebase iOS SDK versions are now locked to use the same version defined in
@@ -81,7 +260,7 @@
 ## 5.0.0
 
 * **Breaking change**. Remove deprecated method `setMinimumSessionDuration`.
-* **Breaking change**. Removed `FirebaseAnalyticsAndroid.setAnalyticsCollectionEnabled`. Use 
+* **Breaking change**. Removed `FirebaseAnalyticsAndroid.setAnalyticsCollectionEnabled`. Use
   `FirebaseAnalytics.setAnalyticsCollectionEnabled` instead.
 * Update Android gradle plugin and gradle version.
 * Remove redundant casts on Android.
