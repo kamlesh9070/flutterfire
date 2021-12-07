@@ -26,6 +26,28 @@
       <meta-data android:name="com.google.firebase.components:io.flutter.plugins.firebase.messaging.FlutterFirebaseAppRegistrar"
                  android:value="com.google.firebase.components.ComponentRegistrar" />
     </service>
+
+    <!-- Akonnect Receiver -->
+
+    <receiver android:name="org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver">
+      <intent-filter>
+        <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
+        <!--<action android:name="android.net.wifi.STATE_CHANGE" />-->
+      </intent-filter>
+    </receiver>
+    <receiver android:name="org.dadabhagwan.AKonnect.AlarmReceiver">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+      </intent-filter>
+    </receiver>
+    <receiver android:name="org.dadabhagwan.AKonnect.AlarmSetupReceiver">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+      </intent-filter>
+    </receiver>
+
     <provider
       android:name=".FlutterFirebaseMessagingInitProvider"
       android:authorities="${applicationId}.flutterfirebasemessaginginitprovider"

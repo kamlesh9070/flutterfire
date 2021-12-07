@@ -22,7 +22,7 @@ import android.service.notification.StatusBarNotification;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import io.flutter.plugins.firebasemessaging.R;
+import io.flutter.plugins.firebase.messaging.R;
 
 import android.util.Log;
 

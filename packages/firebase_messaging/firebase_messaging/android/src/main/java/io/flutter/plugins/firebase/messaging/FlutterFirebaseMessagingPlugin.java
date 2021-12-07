@@ -34,7 +34,9 @@ import io.flutter.plugins.firebase.core.FlutterFirebasePlugin;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
+import org.dadabhagwan.AKonnect.AlarmSetupReceiver;
+import org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver;
+import android.util.Log;
 /** FlutterFirebaseMessagingPlugin */
 public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
     implements FlutterFirebasePlugin,
@@ -42,17 +44,18 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
         NewIntentListener,
         FlutterPlugin,
         ActivityAware {
-
+  private static final String TAG = "FLTFireMsgPlugin";
   private final HashMap<String, Boolean> consumedInitialMessages = new HashMap<>();
   private MethodChannel channel;
   private Activity mainActivity;
   private RemoteMessage initialMessage;
-
+  private Context applicationContext;
+  InternetServiceConnectivityReceiver internetServiceConnectivityReceiver=new InternetServiceConnectivityReceiver();
   private void initInstance(BinaryMessenger messenger) {
     String channelName = "plugins.flutter.io/firebase_messaging";
     channel = new MethodChannel(messenger, channelName);
     channel.setMethodCallHandler(this);
-
+    this.applicationContext = ContextHolder.getApplicationContext();
     // Register broadcast receiver
     IntentFilter intentFilter = new IntentFilter();
     intentFilter.addAction(FlutterFirebaseMessagingUtils.ACTION_TOKEN);
@@ -60,13 +63,31 @@ public class FlutterFirebaseMessagingPlugin extends BroadcastReceiver
     LocalBroadcastManager manager =
         LocalBroadcastManager.getInstance(ContextHolder.getApplicationContext());
     manager.registerReceiver(this, intentFilter);
-
+    setupAlarmForAKNotification(manager);
     registerPlugin(channelName, this);
   }
 
   @Override
   public void onAttachedToEngine(FlutterPluginBinding binding) {
+    Log.d(TAG, "@@@@@@@@@@@@@@@@@@  onAttachedToEngine");
     initInstance(binding.getBinaryMessenger());
+  }
+
+  void setupAlarmForAKNotification(LocalBroadcastManager manager) {
+    Log.d(TAG, "@@@@@@@@@@@@@@@@@@  setupAlarmForAKNotification" + manager);
+    AlarmSetupReceiver.setAlarm(applicationContext);
+    registerConnectivityReceiver(manager);
+  }
+
+  void registerConnectivityReceiver(LocalBroadcastManager manager) {
+    try {
+      Log.d(TAG, "@@@@@@@@@@@@@@@@@@  registerConnectivityReceiver" + manager);
+      internetServiceConnectivityReceiver = new InternetServiceConnectivityReceiver();
+      manager.registerReceiver(internetServiceConnectivityReceiver, new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE"));
+    } catch (Exception e) {
+      Log.e(TAG, "Exception in MainActivity.onDestroy ----> " + e.getMessage());
+      e.printStackTrace();
+    }
   }
 
   @Override

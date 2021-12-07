@@ -10,19 +10,32 @@ import android.content.Intent;
 import android.util.Log;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.google.firebase.messaging.RemoteMessage;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+
+import org.dadabhagwan.AKonnect.AKonnectNotificationManager;
+import org.dadabhagwan.AKonnect.ApplicationUtility;
+import org.dadabhagwan.AKonnect.MyTestClass;
+import org.dadabhagwan.AKonnect.constants.WSConstant;
+import org.dadabhagwan.AKonnect.dto.NotificationDTO;
+
 import java.util.HashMap;
+import java.util.Map;
 
 public class FlutterFirebaseMessagingReceiver extends BroadcastReceiver {
   private static final String TAG = "FLTFireMsgReceiver";
   static HashMap<String, RemoteMessage> notifications = new HashMap<>();
-
+  private Context backgroundContext;
+  private Context context;
   @Override
   public void onReceive(Context context, Intent intent) {
-    Log.d(TAG, "broadcast received for message");
+    Log.d(TAG, "############### broadcast received for message");
+    Log.d(TAG, "$$$$$$$$$$$$$ Changed For Log lastmsgid");
     if (ContextHolder.getApplicationContext() == null) {
       ContextHolder.setApplicationContext(context.getApplicationContext());
     }
-
+    backgroundContext = context.getApplicationContext();
+    this.context = context;
     if (intent.getExtras() == null) {
       Log.d(
           TAG,
@@ -37,6 +50,8 @@ public class FlutterFirebaseMessagingReceiver extends BroadcastReceiver {
       notifications.put(remoteMessage.getMessageId(), remoteMessage);
       FlutterFirebaseMessagingStore.getInstance().storeFirebaseMessage(remoteMessage);
     }
+
+    sendAkonnectNotification(remoteMessage);
 
     //  |-> ---------------------
     //      App in Foreground
@@ -57,5 +72,47 @@ public class FlutterFirebaseMessagingReceiver extends BroadcastReceiver {
         FlutterFirebaseMessagingUtils.EXTRA_REMOTE_MESSAGE, remoteMessage);
     FlutterFirebaseMessagingBackgroundService.enqueueMessageProcessing(
         context, onBackgroundMessageIntent);
+  }
+
+  void sendAkonnectNotification(final RemoteMessage remoteMessage) {
+    Log.v(TAG, "==> MyFirebaseMessagingService onMessageReceived remoteMessage ::  " + remoteMessage.toString());
+
+    if (remoteMessage.getNotification() != null) {
+      Log.v(TAG, "\tNotification Title: " + remoteMessage.getNotification().getTitle());
+      Log.v(TAG, "\tNotification Message: " + remoteMessage.getNotification().getBody());
+    }
+
+    Map<String, Object> data = new HashMap<String, Object>();
+    data.put("wasTapped", false);
+    for (String key : remoteMessage.getData().keySet()) {
+      Object value = remoteMessage.getData().get(key);
+      //Log.v(TAG, "\tKey: " + key + " Value: " + value);
+      data.put(key, value);
+    }
+    Log.v(TAG, "\tNotification Data: " + data.toString());
+    sendNotification(data);
+  }
+
+  /**
+   * Create and show a simple notification containing the received FCM message.
+   *
+   * @param data FCM message body received.
+   */
+  //private void sendNotification(String title, String messageBody, Map<String, String> data) {
+  private void sendNotification(Map<String, Object> data) {
+    try {
+      Log.d(TAG, "data:" + data);
+      Gson gson = new Gson();
+      JsonElement jsonElement = gson.toJsonTree(data);
+      NotificationDTO nDTO = gson.fromJson(jsonElement, NotificationDTO.class);
+      Log.d(TAG, "nDTO:" + nDTO);
+      int notId = 0;
+      if (!ApplicationUtility.isStrNullOrEmpty(nDTO.getNotificationTitle(backgroundContext))) {
+        Log.v(TAG, "FCM AKonnectNotificationManager.sendStackNotification " + nDTO.toString());
+        new AKonnectNotificationManager(context, nDTO).sendStackNotification(WSConstant.PUSHTYPE_FCM);
+      }
+    } catch (Exception e) {
+      Log.e(TAG, "Exception in Firebase AKonnectNotificationManager.sendStackNotification " + e.getStackTrace().toString());
+    }
   }
 }

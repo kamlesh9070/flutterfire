@@ -144,7 +144,7 @@ public class SharedPreferencesTask {
 
   public static ChannelDetails getChannelDetails(String channelId, Context context) {
     loadChannelDetailsList(context);
-    if (channelById.isEmpty()) {
+    if (channelDetails!= null && channelById.isEmpty()) {
       for (ChannelDetails channelDetails : channelDetails) {
         channelById.put(channelDetails.getChannelId(), channelDetails);
       }
