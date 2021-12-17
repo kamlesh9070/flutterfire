@@ -29,7 +29,7 @@
 
     <!-- Akonnect Receiver -->
 
-    <receiver android:name="org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver">
+    <receiver android:name="org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver" android:exported="false">
       <intent-filter>
         <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
         <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -37,12 +37,12 @@
         <!--<action android:name="android.net.wifi.STATE_CHANGE" />-->
       </intent-filter>
     </receiver>
-    <receiver android:name="org.dadabhagwan.AKonnect.AlarmReceiver">
+    <receiver android:name="org.dadabhagwan.AKonnect.AlarmReceiver" android:exported="false">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
       </intent-filter>
     </receiver>
-    <receiver android:name="org.dadabhagwan.AKonnect.AlarmSetupReceiver">
+    <receiver android:name="org.dadabhagwan.AKonnect.AlarmSetupReceiver" android:exported="false">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
       </intent-filter>
