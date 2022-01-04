@@ -49,7 +49,7 @@ public class AlarmSetupReceiver extends BroadcastReceiver {
           //scheduleAlramTimestamp=	currentTimestamp + alarmInterval + (long) (Math.random()*offsetInterval);
           long tempAlarmInterval = alarmInterval + (long) (Math.random() * offsetInterval);
           Intent alarm = new Intent(context, AlarmReceiver.class);
-          PendingIntent recurringAlarm = PendingIntent.getBroadcast(context, 973132, alarm, 0);//973132 - is just id to identify the alarm
+          PendingIntent recurringAlarm = PendingIntent.getBroadcast(context, 973132, alarm, PendingIntent.FLAG_IMMUTABLE);//973132 - is just id to identify the alarm
           AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
           alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
@@ -64,13 +64,13 @@ public class AlarmSetupReceiver extends BroadcastReceiver {
         } else {
           Log.d(TAG, "AlarmSetupReceiver.setAlarm ---> Cancelled ----------------------");
           Intent alarm = new Intent(context, AlarmReceiver.class);
-          PendingIntent recurringAlarm = PendingIntent.getBroadcast(context, 973132, alarm, 0);//973132 - is just id to identify the alarm
+          PendingIntent recurringAlarm = PendingIntent.getBroadcast(context, 973132, alarm, PendingIntent.FLAG_IMMUTABLE);//973132 - is just id to identify the alarm
           AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
           alarmManager.cancel(recurringAlarm);
         }
       }
     } catch (Exception e) {
-      Log.e(TAG, "Exception is AlarmSetupReceiver.setAlarm  ============> " + e.getMessage());
+      Log.e(TAG, "KK @@@@@@@@@@@@@@@@@ Exception is AlarmSetupReceiver.setAlarm  ============> " + e.getMessage());
       e.printStackTrace();
     }
 

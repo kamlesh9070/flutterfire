@@ -84,6 +84,7 @@ public class AKonnectNotificationManager {
     boolean isMsgIdExist = false;
     boolean AlarmActiveFlag = false;
     try {
+      WebServiceCall.sendNotificationLog(context, "Test", nDTO);
       //boolean isDeviceManufacturerSupported = ApplicationUtility.isDeviceManufacturerSupported(context);
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
       SharedPreferencesTask nameByChannelIdPref = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_SENDER_ALIAS_MASTER_PREF);
@@ -335,7 +336,7 @@ public class AKonnectNotificationManager {
 
     System.out.println("################# Inside AKonnectNotificationManager getMainActivityPendingIntent --> Ends");
     // Convert intent into pending intent
-    return PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+    return PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE);
 
   }
 

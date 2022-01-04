@@ -3,6 +3,7 @@
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
   <application>
     <service
       android:name=".FlutterFirebaseMessagingBackgroundService"
@@ -29,7 +30,7 @@
 
     <!-- Akonnect Receiver -->
 
-    <receiver android:name="org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver" android:exported="false">
+    <receiver android:name="org.dadabhagwan.AKonnect.InternetServiceConnectivityReceiver" android:exported="true">
       <intent-filter>
         <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
         <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -37,12 +38,12 @@
         <!--<action android:name="android.net.wifi.STATE_CHANGE" />-->
       </intent-filter>
     </receiver>
-    <receiver android:name="org.dadabhagwan.AKonnect.AlarmReceiver" android:exported="false">
+    <receiver android:name="org.dadabhagwan.AKonnect.AlarmReceiver" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
       </intent-filter>
     </receiver>
-    <receiver android:name="org.dadabhagwan.AKonnect.AlarmSetupReceiver" android:exported="false">
+    <receiver android:name="org.dadabhagwan.AKonnect.AlarmSetupReceiver" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />
       </intent-filter>
