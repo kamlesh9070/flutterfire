@@ -84,7 +84,6 @@ public class AKonnectNotificationManager {
     boolean isMsgIdExist = false;
     boolean AlarmActiveFlag = false;
     try {
-      WebServiceCall.sendNotificationLog(context, "Test", nDTO);
       //boolean isDeviceManufacturerSupported = ApplicationUtility.isDeviceManufacturerSupported(context);
       SharedPreferencesTask sharedPreferencesTask = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_NOTIFICATION_LOG_PREF);
       SharedPreferencesTask nameByChannelIdPref = new SharedPreferencesTask(context, SharedPrefConstants.FILE_NAME_SENDER_ALIAS_MASTER_PREF);
